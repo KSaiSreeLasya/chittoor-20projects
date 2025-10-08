@@ -56,7 +56,10 @@ export default function ProjectForm() {
       banking_ref_id: "",
       service_number: "",
       service_status: "",
-      biller_name: "", // ✅ Added default
+      biller_name: "",
+      customer_mobile: "",
+      visitor_name: "",
+      subsidy_scope: null,
     },
   });
 
