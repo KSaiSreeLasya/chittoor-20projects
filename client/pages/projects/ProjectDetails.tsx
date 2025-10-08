@@ -35,9 +35,16 @@ export default function ProjectDetails() {
       .channel("detail-approval")
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "chittoor_project_approvals", filter: `id=eq.${id}` },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chittoor_project_approvals",
+          filter: `id=eq.${id}`,
+        },
         (payload: any) => {
-          setP((prev) => (prev ? { ...prev, ...(payload.new as any) } : (payload.new as any)));
+          setP((prev) =>
+            prev ? { ...prev, ...(payload.new as any) } : (payload.new as any),
+          );
         },
       )
       .subscribe();
