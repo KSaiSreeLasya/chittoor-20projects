@@ -28,8 +28,7 @@ const schema = z.object({
   biller_name: z.string().nullable().optional(),
   customer_mobile_number: z
     .string()
-    .min(10, "Enter a valid mobile number")
-    .max(15, "Enter a valid mobile number"),
+    .regex(/^[0-9]{10,15}$/, "Enter a valid mobile number"),
   site_visitor_name: z.string().min(2, "Visitor name is required"),
   subsidy_scope: z.enum(["Axiso", "Customer"]),
 });
