@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
 import type { ChittoorProject } from "@shared/api";
 import { format } from "date-fns";
 
@@ -12,6 +12,19 @@ export default function ProjectDetails() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    if (!hasSupabaseEnv) {
+      setError(
+        "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+      );
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       try {
         const { data, error } = await supabase
@@ -30,7 +43,7 @@ export default function ProjectDetails() {
   }, [id]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !hasSupabaseEnv) return;
     const channel = supabase
       .channel("detail-approval")
       .on(
