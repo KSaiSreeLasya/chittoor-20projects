@@ -14,6 +14,7 @@ export interface DemoResponse {
 // Chittoor Project types shared across client & server
 export type ApprovalStatus = "pending" | "approved" | "rejected";
 export type SiteVisitStatus = "Planned" | "Visited" | "Pending" | "Completed";
+export type SubsidyScope = "Axiso" | "Customer";
 
 export interface ChittoorProject {
   id: string;
@@ -30,6 +31,9 @@ export interface ChittoorProject {
   service_number: string | null;
   service_status: string | null;
   biller_name: string | null;
+  customer_mobile_number: string | null;
+  site_visitor_name: string | null;
+  subsidy_scope: SubsidyScope | null;
   approval_status: ApprovalStatus; // managed by crm.axisogreen.in
   approval_updated_at: string | null;
 }
