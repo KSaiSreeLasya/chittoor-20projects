@@ -29,6 +29,23 @@ export default function ProjectDetails() {
     })();
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel("detail-approval")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "chittoor_project_approvals", filter: `id=eq.${id}` },
+        (payload: any) => {
+          setP((prev) => (prev ? { ...prev, ...(payload.new as any) } : (payload.new as any)));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
       <div className="container py-8">
