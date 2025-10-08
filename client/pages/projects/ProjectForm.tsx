@@ -14,7 +14,7 @@ const schema = z.object({
   power_bill_number: z.string().nullable().optional(),
   project_cost: z.coerce.number().min(0).nullable().optional(),
   site_visit_status: z
-    .enum(["Planned", "Visited", "Pending", "Completed"]) as z.ZodType<SiteVisitStatus>
+    .enum(["Planned", "Visited", "Pending", "Completed"])
     .nullable()
     .optional(),
   payment_amount: z.coerce.number().min(0).nullable().optional(),
