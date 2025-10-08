@@ -125,8 +125,17 @@ export default function ProjectForm() {
       setLoading(true);
       const payload = {
         ...values,
-        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null, // ✅ convert back to number
+        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null,
         date: values.date ? new Date(values.date).toISOString() : null,
+        customer_mobile:
+          values.customer_mobile && values.customer_mobile.trim() !== ""
+            ? values.customer_mobile.trim()
+            : null,
+        visitor_name:
+          values.visitor_name && values.visitor_name.trim() !== ""
+            ? values.visitor_name.trim()
+            : null,
+        subsidy_scope: values.subsidy_scope ?? null,
       } as any;
 
       if (isEdit) {
