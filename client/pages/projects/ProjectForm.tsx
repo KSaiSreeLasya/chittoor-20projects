@@ -27,7 +27,10 @@ const schema = z.object({
   banking_ref_id: z.string().nullable().optional(),
   service_number: z.string().nullable().optional(),
   service_status: z.string().nullable().optional(),
-  biller_name: z.string().nullable().optional(), // ✅ Added
+  biller_name: z.string().nullable().optional(),
+  customer_mobile: z.string().nullable().optional(),
+  visitor_name: z.string().nullable().optional(),
+  subsidy_scope: z.enum(["Axiso", "Customer"]).nullable().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
