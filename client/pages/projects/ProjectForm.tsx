@@ -100,7 +100,9 @@ export default function ProjectForm() {
 
   const onSubmit = async (values: FormValues) => {
     if (!hasSupabaseEnv) {
-      alert("Supabase not configured. Click Open MCP popover and connect to Supabase.");
+      alert(
+        "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+      );
       return;
     }
 
