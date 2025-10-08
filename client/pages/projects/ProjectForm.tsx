@@ -57,6 +57,13 @@ export default function ProjectForm() {
   }, [id]);
 
   const load = async () => {
+    if (!hasSupabaseEnv) {
+      setLoadError(
+        "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -69,7 +76,10 @@ export default function ProjectForm() {
       form.reset({
         project_name: p.project_name ?? "",
         date: p.date ?? "",
-        capacity_kw: p.capacity_kw?.toString() ?? undefined, // ✅ Handle as string
+        capacity_kw:
+          p.capacity_kw !== null && p.capacity_kw !== undefined
+            ? (String(p.capacity_kw) as "2" | "3")
+            : undefined, // ✅ Handle as string
         location: p.location ?? "",
         power_bill_number: p.power_bill_number ?? "",
         project_cost: p.project_cost ?? undefined,
@@ -89,6 +99,13 @@ export default function ProjectForm() {
   };
 
   const onSubmit = async (values: FormValues) => {
+    if (!hasSupabaseEnv) {
+      alert(
+        "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       const payload = {
