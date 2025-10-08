@@ -71,7 +71,8 @@ export default function ProjectForm() {
         location: p.location ?? "",
         power_bill_number: p.power_bill_number ?? "",
         project_cost: p.project_cost ?? undefined,
-        site_visit_status: (p.site_visit_status as SiteVisitStatus) ?? "Planned",
+        site_visit_status:
+          (p.site_visit_status as SiteVisitStatus) ?? "Planned",
         payment_amount: p.payment_amount ?? undefined,
         banking_ref_id: p.banking_ref_id ?? "",
         service_number: p.service_number ?? "",
@@ -118,55 +119,99 @@ export default function ProjectForm() {
           <h2 className="text-2xl font-bold text-emerald-900">
             {isEdit ? "Edit Project" : "New Project"}
           </h2>
-          <button onClick={() => navigate(-1)} className="rounded-md border border-emerald-200 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50">Back</button>
+          <button
+            onClick={() => navigate(-1)}
+            className="rounded-md border border-emerald-200 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50"
+          >
+            Back
+          </button>
         </div>
 
         {!hasSupabaseEnv && (
           <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
             <p className="font-semibold">Supabase not configured</p>
-            <p className="text-sm mt-1">Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. Use <a href="#open-mcp-popover" className="underline">Open MCP popover</a> to connect Supabase.</p>
+            <p className="text-sm mt-1">
+              Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. Use{" "}
+              <a href="#open-mcp-popover" className="underline">
+                Open MCP popover
+              </a>{" "}
+              to connect Supabase.
+            </p>
           </div>
         )}
 
         {loadError && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{loadError}</div>
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+            {loadError}
+          </div>
         )}
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+        >
           <div className="space-y-1">
             <label className="text-sm font-medium">Project Name</label>
-            <input className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("project_name")} />
-            <p className="text-xs text-red-600">{form.formState.errors.project_name?.message}</p>
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("project_name")}
+            />
+            <p className="text-xs text-red-600">
+              {form.formState.errors.project_name?.message}
+            </p>
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Date</label>
-            <input type="date" className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("date")} />
+            <input
+              type="date"
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("date")}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Capacity (kW)</label>
-            <input type="number" step="0.01" className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("capacity_kw", { valueAsNumber: true })} />
+            <input
+              type="number"
+              step="0.01"
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("capacity_kw", { valueAsNumber: true })}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Villages / Location</label>
-            <input className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("location")} />
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("location")}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Power Bill Number</label>
-            <input className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("power_bill_number")} />
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("power_bill_number")}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Project Cost (₹)</label>
-            <input type="number" step="0.01" className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("project_cost", { valueAsNumber: true })} />
+            <input
+              type="number"
+              step="0.01"
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("project_cost", { valueAsNumber: true })}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Site Visit Status</label>
-            <select className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("site_visit_status")}>
+            <select
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("site_visit_status")}
+            >
               <option>Planned</option>
               <option>Visited</option>
               <option>Pending</option>
@@ -175,34 +220,64 @@ export default function ProjectForm() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium">Payment Request (Amount ₹)</label>
-            <input type="number" step="0.01" className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("payment_amount", { valueAsNumber: true })} />
+            <label className="text-sm font-medium">
+              Payment Request (Amount ₹)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("payment_amount", { valueAsNumber: true })}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Banking Ref ID</label>
-            <input className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("banking_ref_id")} />
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("banking_ref_id")}
+            />
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium">Service Number of Power Bill</label>
-            <input className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("service_number")} />
+            <label className="text-sm font-medium">
+              Service Number of Power Bill
+            </label>
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("service_number")}
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium">Service Status</label>
-            <input className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500" {...form.register("service_status")} />
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("service_status")}
+            />
           </div>
 
           <div className="md:col-span-2 rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-emerald-900">
             <p className="text-sm">
-              Approval Status is managed on <span className="font-semibold">crm.axisogreen.in</span> and synced here via Supabase (read-only in this form).
+              Approval Status is managed on{" "}
+              <span className="font-semibold">crm.axisogreen.in</span> and
+              synced here via Supabase (read-only in this form).
             </p>
           </div>
 
           <div className="md:col-span-2 flex items-center justify-end gap-3">
-            <button type="button" onClick={() => navigate("/")} className="rounded-md border border-emerald-200 px-4 py-2 text-emerald-800 hover:bg-emerald-50">Cancel</button>
-            <button disabled={loading} className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-white shadow hover:bg-emerald-700 disabled:opacity-50" type="submit">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="rounded-md border border-emerald-200 px-4 py-2 text-emerald-800 hover:bg-emerald-50"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={loading}
+              className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-white shadow hover:bg-emerald-700 disabled:opacity-50"
+              type="submit"
+            >
               {loading ? "Saving…" : isEdit ? "Save Changes" : "Create Project"}
             </button>
           </div>

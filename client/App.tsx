@@ -18,18 +18,36 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
     <nav className="sticky top-0 z-30 border-b border-emerald-200/70 bg-white/80 backdrop-blur">
       <div className="container flex items-center justify-between py-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src="https://cdn.builder.io/api/v1/image/assets%2F9cb17e967f804ce2b909c6bc3232a9f0%2F10e852ea23b74053b675e8212f372889?format=webp&width=160" alt="AXISO Green Energy" className="h-8 w-auto" />
-          <span className="text-lg font-extrabold tracking-tight text-emerald-900">Chittoor Projects</span>
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets%2F9cb17e967f804ce2b909c6bc3232a9f0%2F10e852ea23b74053b675e8212f372889?format=webp&width=160"
+            alt="AXISO Green Energy"
+            className="h-8 w-auto"
+          />
+          <span className="text-lg font-extrabold tracking-tight text-emerald-900">
+            Chittoor Projects
+          </span>
         </Link>
         <div className="flex items-center gap-3">
-          <Link to="/" className="rounded-md px-3 py-1.5 text-emerald-800 hover:bg-emerald-50">Dashboard</Link>
-          <Link to="/projects/new" className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">New Project</Link>
+          <Link
+            to="/"
+            className="rounded-md px-3 py-1.5 text-emerald-800 hover:bg-emerald-50"
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/projects/new"
+            className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
+          >
+            New Project
+          </Link>
         </div>
       </div>
     </nav>
     <main className="flex-1">{children}</main>
     <footer className="border-t border-emerald-200/70 bg-white/70">
-      <div className="container py-4 text-sm text-emerald-800/80">© AxisOGreen — Chittoor Projects</div>
+      <div className="container py-4 text-sm text-emerald-800/80">
+        © AxisOGreen — Chittoor Projects
+      </div>
     </footer>
   </div>
 );

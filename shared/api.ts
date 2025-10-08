@@ -34,6 +34,11 @@ export interface ChittoorProject {
 }
 
 export interface UpsertChittoorProject
-  extends Partial<Omit<ChittoorProject, "id" | "created_at" | "approval_status" | "approval_updated_at">> {
+  extends Partial<
+    Omit<
+      ChittoorProject,
+      "id" | "created_at" | "approval_status" | "approval_updated_at"
+    >
+  > {
   id?: string;
 }
