@@ -77,6 +77,7 @@ export default function ProjectDetails() {
             </button>
           </div>
         </div>
+
         {loading && (
           <div className="rounded-xl border border-emerald-200 bg-white p-6">
             Loading…
@@ -87,8 +88,10 @@ export default function ProjectDetails() {
             {error}
           </div>
         )}
+
         {p && (
           <div className="grid gap-6 md:grid-cols-2">
+            {/* --- Left Column: Overview --- */}
             <div className="rounded-xl border border-emerald-200 bg-white p-6">
               <h3 className="mb-4 text-lg font-semibold text-emerald-900">
                 Overview
@@ -138,6 +141,8 @@ export default function ProjectDetails() {
                 </div>
               </dl>
             </div>
+
+            {/* --- Right Column: Status & Billing --- */}
             <div className="rounded-xl border border-emerald-200 bg-white p-6">
               <h3 className="mb-4 text-lg font-semibold text-emerald-900">
                 Status & Billing
@@ -185,13 +190,28 @@ export default function ProjectDetails() {
                     {p.service_status ?? "—"}
                   </dd>
                 </div>
+
+                {/* ✅ New Field: Biller Name */}
+                <div>
+                  <dt className="text-sm text-emerald-700/80">Biller Name</dt>
+                  <dd className="font-medium text-emerald-900">
+                    {p.biller_name ?? "—"}
+                  </dd>
+                </div>
+
                 <div>
                   <dt className="text-sm text-emerald-700/80">
                     Approval (CRM)
                   </dt>
                   <dd className="font-medium">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${p.approval_status === "approved" ? "bg-emerald-100 text-emerald-800" : p.approval_status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800"}`}
+                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
+                        p.approval_status === "approved"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : p.approval_status === "rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-amber-100 text-amber-800"
+                      }`}
                     >
                       {p.approval_status}
                     </span>
