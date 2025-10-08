@@ -4,7 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
-import type { ChittoorProject, SiteVisitStatus } from "@shared/api";
+import type {
+  ChittoorProject,
+  SiteVisitStatus,
+  SubsidyScope,
+} from "@shared/api";
 
 const schema = z.object({
   project_name: z.string().min(2, "Required"),
@@ -21,7 +25,12 @@ const schema = z.object({
   banking_ref_id: z.string().nullable().optional(),
   service_number: z.string().nullable().optional(),
   service_status: z.string().nullable().optional(),
-  biller_name: z.string().nullable().optional(), // ✅ Added
+  biller_name: z.string().nullable().optional(),
+  customer_mobile_number: z
+    .string()
+    .regex(/^[0-9]{10,15}$/, "Enter a valid mobile number"),
+  site_visitor_name: z.string().min(2, "Visitor name is required"),
+  subsidy_scope: z.enum(["Axiso", "Customer"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -47,7 +56,10 @@ export default function ProjectForm() {
       banking_ref_id: "",
       service_number: "",
       service_status: "",
-      biller_name: "", // ✅ Added default
+      biller_name: "",
+      customer_mobile_number: "",
+      site_visitor_name: "",
+      subsidy_scope: "Axiso",
     },
   });
 
@@ -89,7 +101,10 @@ export default function ProjectForm() {
         banking_ref_id: p.banking_ref_id ?? "",
         service_number: p.service_number ?? "",
         service_status: p.service_status ?? "",
-        biller_name: p.biller_name ?? "", // ✅ Added
+        biller_name: p.biller_name ?? "",
+        customer_mobile_number: p.customer_mobile_number ?? "",
+        site_visitor_name: p.site_visitor_name ?? "",
+        subsidy_scope: (p.subsidy_scope as SubsidyScope | null) ?? "Axiso",
       });
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
@@ -110,7 +125,10 @@ export default function ProjectForm() {
       setLoading(true);
       const payload = {
         ...values,
-        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null, // ✅ convert back to number
+        customer_mobile_number: values.customer_mobile_number.trim(),
+        site_visitor_name: values.site_visitor_name.trim(),
+        subsidy_scope: values.subsidy_scope,
+        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null,
         date: values.date ? new Date(values.date).toISOString() : null,
       } as any;
 
@@ -203,6 +221,21 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Customer Mobile Number */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">
+              Customer Mobile Number
+            </label>
+            <input
+              type="tel"
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("customer_mobile_number")}
+            />
+            <p className="text-xs text-red-600">
+              {form.formState.errors.customer_mobile_number?.message}
+            </p>
+          </div>
+
           {/* Power Bill Number */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Power Bill Number</label>
@@ -234,6 +267,30 @@ export default function ProjectForm() {
               <option>Visited</option>
               <option>Pending</option>
               <option>Completed</option>
+            </select>
+          </div>
+
+          {/* Site Visitor Name */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Site Visitor Name</label>
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("site_visitor_name")}
+            />
+            <p className="text-xs text-red-600">
+              {form.formState.errors.site_visitor_name?.message}
+            </p>
+          </div>
+
+          {/* Subsidy Scope */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Subsidy Scope</label>
+            <select
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("subsidy_scope")}
+            >
+              <option value="Axiso">Axiso</option>
+              <option value="Customer">Customer</option>
             </select>
           </div>
 

@@ -138,6 +138,22 @@ export default function ProjectDetails() {
                 </div>
                 <div>
                   <dt className="text-sm text-emerald-700/80">
+                    Customer Mobile Number
+                  </dt>
+                  <dd className="font-medium text-emerald-900">
+                    {p.customer_mobile_number ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-emerald-700/80">
+                    Site Visitor Name
+                  </dt>
+                  <dd className="font-medium text-emerald-900">
+                    {p.site_visitor_name ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-emerald-700/80">
                     Power Bill Number
                   </dt>
                   <dd className="font-medium text-emerald-900">
@@ -201,6 +217,12 @@ export default function ProjectDetails() {
                   </dt>
                   <dd className="font-medium text-emerald-900">
                     {p.service_status ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-emerald-700/80">Subsidy Scope</dt>
+                  <dd className="font-medium text-emerald-900">
+                    {p.subsidy_scope ?? "—"}
                   </dd>
                 </div>
 
