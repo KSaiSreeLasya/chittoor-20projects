@@ -17,30 +17,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const init = async () => {
       const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email } : null);
+      setUser(
+        data.session?.user
+          ? { id: data.session.user.id, email: data.session.user.email }
+          : null,
+      );
       setLoading(false);
     };
     void init();
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+      setUser(
+        session?.user
+          ? { id: session.user.id, email: session.user.email }
+          : null,
+      );
     });
     return () => {
       sub.subscription.unsubscribe();
     };
   }, []);
 
-  const value: AuthContextValue = useMemo(() => ({
-    user,
-    loading,
-    signIn: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return { error: error.message };
-      return {};
-    },
-    signOut: async () => {
-      await supabase.auth.signOut();
-    },
-  }), [user, loading]);
+  const value: AuthContextValue = useMemo(
+    () => ({
+      user,
+      loading,
+      signIn: async (email, password) => {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) return { error: error.message };
+        return {};
+      },
+      signOut: async () => {
+        await supabase.auth.signOut();
+      },
+    }),
+    [user, loading],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

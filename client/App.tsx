@@ -5,7 +5,14 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProjectForm from "./pages/projects/ProjectForm";
@@ -34,13 +41,35 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link to="/" className="rounded-md px-3 py-1.5 text-emerald-800 hover:bg-emerald-50">Dashboard</Link>
-                <Link to="/projects/new" className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">New Project</Link>
-                <span className="text-sm text-emerald-800/80">{user.email}</span>
-                <button onClick={signOut} className="rounded-md border border-emerald-200 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50">Logout</button>
+                <Link
+                  to="/"
+                  className="rounded-md px-3 py-1.5 text-emerald-800 hover:bg-emerald-50"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/projects/new"
+                  className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
+                >
+                  New Project
+                </Link>
+                <span className="text-sm text-emerald-800/80">
+                  {user.email}
+                </span>
+                <button
+                  onClick={signOut}
+                  className="rounded-md border border-emerald-200 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50"
+                >
+                  Logout
+                </button>
               </>
             ) : (
-              <Link to="/login" className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">Login</Link>
+              <Link
+                to="/login"
+                className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
+              >
+                Login
+              </Link>
             )}
           </div>
         </div>
@@ -73,10 +102,38 @@ const App = () => (
           <Layout>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-              <Route path="/projects/new" element={<RequireAuth><ProjectForm /></RequireAuth>} />
-              <Route path="/projects/:id" element={<RequireAuth><ProjectDetails /></RequireAuth>} />
-              <Route path="/projects/:id/edit" element={<RequireAuth><ProjectForm /></RequireAuth>} />
+              <Route
+                path="/"
+                element={
+                  <RequireAuth>
+                    <Index />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/projects/new"
+                element={
+                  <RequireAuth>
+                    <ProjectForm />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/projects/:id"
+                element={
+                  <RequireAuth>
+                    <ProjectDetails />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/projects/:id/edit"
+                element={
+                  <RequireAuth>
+                    <ProjectForm />
+                  </RequireAuth>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
