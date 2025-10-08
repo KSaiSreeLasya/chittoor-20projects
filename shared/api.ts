@@ -29,6 +29,7 @@ export interface ChittoorProject {
   banking_ref_id: string | null;
   service_number: string | null;
   service_status: string | null;
+  biller_name: string | null;
   approval_status: ApprovalStatus; // managed by crm.axisogreen.in
   approval_updated_at: string | null;
 }
