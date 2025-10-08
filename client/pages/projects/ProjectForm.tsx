@@ -57,6 +57,13 @@ export default function ProjectForm() {
   }, [id]);
 
   const load = async () => {
+    if (!hasSupabaseEnv) {
+      setLoadError(
+        "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -89,6 +96,11 @@ export default function ProjectForm() {
   };
 
   const onSubmit = async (values: FormValues) => {
+    if (!hasSupabaseEnv) {
+      alert("Supabase not configured. Click Open MCP popover and connect to Supabase.");
+      return;
+    }
+
     try {
       setLoading(true);
       const payload = {
