@@ -10,6 +10,8 @@ import type {
   SubsidyScope,
 } from "@shared/api";
 
+const SUBSIDY_SCOPE_OPTIONS: SubsidyScope[] = ["Axiso", "Customer"];
+
 const schema = z.object({
   project_name: z.string().min(2, "Required"),
   date: z.string().optional().or(z.literal("")),
