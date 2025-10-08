@@ -9,7 +9,7 @@ import type { ChittoorProject, SiteVisitStatus } from "@shared/api";
 const schema = z.object({
   project_name: z.string().min(2, "Required"),
   date: z.string().optional().or(z.literal("")),
-  capacity_kw: z.coerce.number().min(0).nullable().optional(),
+  capacity_kw: z.enum(["2", "3"]).nullable().optional(), // Updated: select type
   location: z.string().nullable().optional(),
   power_bill_number: z.string().nullable().optional(),
   project_cost: z.coerce.number().min(0).nullable().optional(),
@@ -21,6 +21,7 @@ const schema = z.object({
   banking_ref_id: z.string().nullable().optional(),
   service_number: z.string().nullable().optional(),
   service_status: z.string().nullable().optional(),
+  biller_name: z.string().nullable().optional(), // ✅ Added
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -46,6 +47,7 @@ export default function ProjectForm() {
       banking_ref_id: "",
       service_number: "",
       service_status: "",
+      biller_name: "", // ✅ Added default
     },
   });
 
@@ -67,7 +69,7 @@ export default function ProjectForm() {
       form.reset({
         project_name: p.project_name ?? "",
         date: p.date ?? "",
-        capacity_kw: p.capacity_kw ?? undefined,
+        capacity_kw: p.capacity_kw?.toString() ?? undefined, // ✅ Handle as string
         location: p.location ?? "",
         power_bill_number: p.power_bill_number ?? "",
         project_cost: p.project_cost ?? undefined,
@@ -77,6 +79,7 @@ export default function ProjectForm() {
         banking_ref_id: p.banking_ref_id ?? "",
         service_number: p.service_number ?? "",
         service_status: p.service_status ?? "",
+        biller_name: p.biller_name ?? "", // ✅ Added
       });
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
@@ -90,8 +93,10 @@ export default function ProjectForm() {
       setLoading(true);
       const payload = {
         ...values,
+        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null, // ✅ convert back to number
         date: values.date ? new Date(values.date).toISOString() : null,
       } as any;
+
       if (isEdit) {
         const { error } = await supabase
           .from("chittoor_project_approvals")
@@ -127,19 +132,6 @@ export default function ProjectForm() {
           </button>
         </div>
 
-        {!hasSupabaseEnv && (
-          <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
-            <p className="font-semibold">Supabase not configured</p>
-            <p className="text-sm mt-1">
-              Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. Use{" "}
-              <a href="#open-mcp-popover" className="underline">
-                Open MCP popover
-              </a>{" "}
-              to connect Supabase.
-            </p>
-          </div>
-        )}
-
         {loadError && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
             {loadError}
@@ -150,6 +142,7 @@ export default function ProjectForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
         >
+          {/* Project Name */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Project Name</label>
             <input
@@ -161,6 +154,7 @@ export default function ProjectForm() {
             </p>
           </div>
 
+          {/* Date */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Date</label>
             <input
@@ -170,16 +164,20 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Capacity (Dropdown) */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Capacity (kW)</label>
-            <input
-              type="number"
-              step="0.01"
+            <select
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-              {...form.register("capacity_kw", { valueAsNumber: true })}
-            />
+              {...form.register("capacity_kw")}
+            >
+              <option value="">Select</option>
+              <option value="2">2 kW</option>
+              <option value="3">3 kW</option>
+            </select>
           </div>
 
+          {/* Location */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Villages / Location</label>
             <input
@@ -188,6 +186,7 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Power Bill Number */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Power Bill Number</label>
             <input
@@ -196,6 +195,7 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Project Cost */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Project Cost (₹)</label>
             <input
@@ -206,6 +206,7 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Site Visit Status */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Site Visit Status</label>
             <select
@@ -219,6 +220,7 @@ export default function ProjectForm() {
             </select>
           </div>
 
+          {/* Payment Request */}
           <div className="space-y-1">
             <label className="text-sm font-medium">
               Payment Request (Amount ₹)
@@ -231,6 +233,7 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Banking Ref ID */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Banking Ref ID</label>
             <input
@@ -239,6 +242,7 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Service Number */}
           <div className="space-y-1">
             <label className="text-sm font-medium">
               Service Number of Power Bill
@@ -249,6 +253,7 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Service Status */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Service Status</label>
             <input
@@ -257,6 +262,16 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* ✅ Biller Name */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Biller Name</label>
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("biller_name")}
+            />
+          </div>
+
+          {/* Approval Note */}
           <div className="md:col-span-2 rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-emerald-900">
             <p className="text-sm">
               Approval Status is managed on{" "}
@@ -265,6 +280,7 @@ export default function ProjectForm() {
             </p>
           </div>
 
+          {/* Buttons */}
           <div className="md:col-span-2 flex items-center justify-end gap-3">
             <button
               type="button"
