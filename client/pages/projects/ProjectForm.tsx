@@ -123,7 +123,10 @@ export default function ProjectForm() {
       setLoading(true);
       const payload = {
         ...values,
-        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null, // ✅ convert back to number
+        customer_mobile_number: values.customer_mobile_number.trim(),
+        site_visitor_name: values.site_visitor_name.trim(),
+        subsidy_scope: values.subsidy_scope,
+        capacity_kw: values.capacity_kw ? Number(values.capacity_kw) : null,
         date: values.date ? new Date(values.date).toISOString() : null,
       } as any;
 
