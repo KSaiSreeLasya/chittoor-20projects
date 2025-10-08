@@ -102,10 +102,10 @@ export default function ProjectForm() {
         service_number: p.service_number ?? "",
         service_status: p.service_status ?? "",
         biller_name: p.biller_name ?? "",
-      customer_mobile_number: p.customer_mobile_number ?? "",
-      site_visitor_name: p.site_visitor_name ?? "",
-      subsidy_scope: (p.subsidy_scope as SubsidyScope | null) ?? "Axiso",
-    });
+        customer_mobile_number: p.customer_mobile_number ?? "",
+        site_visitor_name: p.site_visitor_name ?? "",
+        subsidy_scope: (p.subsidy_scope as SubsidyScope | null) ?? "Axiso",
+      });
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
     } finally {
@@ -223,7 +223,9 @@ export default function ProjectForm() {
 
           {/* Customer Mobile Number */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Customer Mobile Number</label>
+            <label className="text-sm font-medium">
+              Customer Mobile Number
+            </label>
             <input
               type="tel"
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
