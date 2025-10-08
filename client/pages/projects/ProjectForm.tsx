@@ -4,7 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
-import type { ChittoorProject, SiteVisitStatus } from "@shared/api";
+import type {
+  ChittoorProject,
+  SiteVisitStatus,
+  SubsidyScope,
+} from "@shared/api";
 
 const schema = z.object({
   project_name: z.string().min(2, "Required"),
