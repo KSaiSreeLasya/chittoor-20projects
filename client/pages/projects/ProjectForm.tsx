@@ -216,6 +216,19 @@ export default function ProjectForm() {
             />
           </div>
 
+          {/* Customer Mobile Number */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Customer Mobile Number</label>
+            <input
+              type="tel"
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("customer_mobile_number")}
+            />
+            <p className="text-xs text-red-600">
+              {form.formState.errors.customer_mobile_number?.message}
+            </p>
+          </div>
+
           {/* Power Bill Number */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Power Bill Number</label>
@@ -247,6 +260,30 @@ export default function ProjectForm() {
               <option>Visited</option>
               <option>Pending</option>
               <option>Completed</option>
+            </select>
+          </div>
+
+          {/* Site Visitor Name */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Site Visitor Name</label>
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("site_visitor_name")}
+            />
+            <p className="text-xs text-red-600">
+              {form.formState.errors.site_visitor_name?.message}
+            </p>
+          </div>
+
+          {/* Subsidy Scope */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Subsidy Scope</label>
+            <select
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("subsidy_scope")}
+            >
+              <option value="Axiso">Axiso</option>
+              <option value="Customer">Customer</option>
             </select>
           </div>
 
