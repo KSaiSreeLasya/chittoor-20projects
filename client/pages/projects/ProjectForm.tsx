@@ -101,7 +101,10 @@ export default function ProjectForm() {
         banking_ref_id: p.banking_ref_id ?? "",
         service_number: p.service_number ?? "",
         service_status: p.service_status ?? "",
-        biller_name: p.biller_name ?? "", // ✅ Added
+        biller_name: p.biller_name ?? "",
+        customer_mobile: p.customer_mobile ?? "",
+        visitor_name: p.visitor_name ?? "",
+        subsidy_scope: p.subsidy_scope ?? null,
       });
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
