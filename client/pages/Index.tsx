@@ -49,6 +49,28 @@ export default function Index() {
     return counts;
   }, [projects]);
 
+  useEffect(() => {
+    if (!hasSupabaseEnv) return;
+    const channel = supabase
+      .channel("chittoor-approvals")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chittoor_project_approvals" },
+        (payload: any) => {
+          setProjects((prev) => {
+            if (payload.eventType === "INSERT") return [payload.new as any, ...prev];
+            if (payload.eventType === "UPDATE") return prev.map((p) => (p.id === (payload.new as any).id ? { ...p, ...(payload.new as any) } : p));
+            if (payload.eventType === "DELETE") return prev.filter((p) => p.id !== (payload.old as any).id);
+            return prev;
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
       <div className="container py-10">
@@ -63,6 +85,7 @@ export default function Index() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <button onClick={() => fetchProjects()} className="inline-flex items-center rounded-lg border border-emerald-200 px-4 py-2 text-emerald-800 hover:bg-emerald-50">Refresh</button>
             <Link
               to="/projects/new"
               className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-white shadow hover:bg-emerald-700 transition-colors"
