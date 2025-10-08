@@ -21,7 +21,13 @@ const schema = z.object({
   banking_ref_id: z.string().nullable().optional(),
   service_number: z.string().nullable().optional(),
   service_status: z.string().nullable().optional(),
-  biller_name: z.string().nullable().optional(), // ✅ Added
+  biller_name: z.string().nullable().optional(),
+  customer_mobile_number: z
+    .string()
+    .min(10, "Enter a valid mobile number")
+    .max(15, "Enter a valid mobile number"),
+  site_visitor_name: z.string().min(2, "Visitor name is required"),
+  subsidy_scope: z.enum(["Axiso", "Customer"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -47,7 +53,10 @@ export default function ProjectForm() {
       banking_ref_id: "",
       service_number: "",
       service_status: "",
-      biller_name: "", // ✅ Added default
+      biller_name: "",
+      customer_mobile_number: "",
+      site_visitor_name: "",
+      subsidy_scope: "Axiso",
     },
   });
 
@@ -89,8 +98,12 @@ export default function ProjectForm() {
         banking_ref_id: p.banking_ref_id ?? "",
         service_number: p.service_number ?? "",
         service_status: p.service_status ?? "",
-        biller_name: p.biller_name ?? "", // ✅ Added
-      });
+        biller_name: p.biller_name ?? "",
+      customer_mobile_number: p.customer_mobile_number ?? "",
+      site_visitor_name: p.site_visitor_name ?? "",
+      subsidy_scope:
+        (p.subsidy_scope as "Axiso" | "Customer" | null) ?? "Axiso",
+    });
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
     } finally {
