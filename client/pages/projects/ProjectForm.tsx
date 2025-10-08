@@ -58,7 +58,7 @@ export default function ProjectForm() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("chittoor_projects")
+        .from("chittoor_project_approvals")
         .select("*")
         .eq("id", id!)
         .single();
@@ -93,13 +93,13 @@ export default function ProjectForm() {
       } as any;
       if (isEdit) {
         const { error } = await supabase
-          .from("chittoor_projects")
+          .from("chittoor_project_approvals")
           .update(payload)
           .eq("id", id!);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from("chittoor_projects")
+          .from("chittoor_project_approvals")
           .insert({ ...payload, approval_status: "pending" });
         if (error) throw error;
       }

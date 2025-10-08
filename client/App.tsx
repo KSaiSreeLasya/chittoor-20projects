@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProjectForm from "./pages/projects/ProjectForm";
+import ProjectDetails from "./pages/projects/ProjectDetails";
 
 const queryClient = new QueryClient();
 
@@ -17,7 +18,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
     <nav className="sticky top-0 z-30 border-b border-emerald-200/70 bg-white/80 backdrop-blur">
       <div className="container flex items-center justify-between py-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-emerald-600" />
+          <img src="https://cdn.builder.io/api/v1/image/assets%2F9cb17e967f804ce2b909c6bc3232a9f0%2F10e852ea23b74053b675e8212f372889?format=webp&width=160" alt="AXISO Green Energy" className="h-8 w-auto" />
           <span className="text-lg font-extrabold tracking-tight text-emerald-900">Chittoor Projects</span>
         </Link>
         <div className="flex items-center gap-3">
@@ -43,6 +44,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/projects/new" element={<ProjectForm />} />
+            <Route path="/projects/:id" element={<ProjectDetails />} />
             <Route path="/projects/:id/edit" element={<ProjectForm />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

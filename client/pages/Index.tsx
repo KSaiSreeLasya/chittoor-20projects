@@ -19,7 +19,7 @@ export default function Index() {
     try {
       setLoading(true);
       setError(null);
-      let query = supabase.from("chittoor_projects").select("*").order("created_at", { ascending: false });
+      let query = supabase.from("chittoor_project_approvals").select("*").order("created_at", { ascending: false });
       if (filter !== "all") {
         query = query.eq("approval_status", filter);
       }
@@ -120,7 +120,7 @@ export default function Index() {
                 )}
                 {projects.map((p) => (
                   <tr key={p.id} className="border-t border-emerald-100">
-                    <td className="px-4 py-3 font-medium text-emerald-900">{p.project_name}</td>
+                    <td className="px-4 py-3 font-medium text-emerald-900"><Link to={`/projects/${p.id}`}>{p.project_name}</Link></td>
                     <td className="px-4 py-3 text-emerald-800">{p.date ? format(new Date(p.date), "dd MMM yyyy") : "—"}</td>
                     <td className="px-4 py-3 text-emerald-800">{p.capacity_kw ?? "—"}</td>
                     <td className="px-4 py-3 text-emerald-800">{p.location ?? "—"}</td>
@@ -145,7 +145,7 @@ export default function Index() {
                         <button
                           onClick={async () => {
                             if (!confirm("Delete this project?")) return;
-                            const { error } = await supabase.from("chittoor_projects").delete().eq("id", p.id);
+                            const { error } = await supabase.from("chittoor_project_approvals").delete().eq("id", p.id);
                             if (!error) setProjects((prev) => prev.filter((x) => x.id !== p.id));
                             else alert(error.message);
                           }}
