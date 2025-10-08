@@ -16,6 +16,13 @@ export default function Index() {
   }, [filter]);
 
   const fetchProjects = async () => {
+    if (!hasSupabaseEnv) {
+      setError(
+        "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -94,7 +101,8 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => fetchProjects()}
-              className="inline-flex items-center rounded-lg border border-emerald-200 px-4 py-2 text-emerald-800 hover:bg-emerald-50"
+              disabled={!hasKeys}
+              className="inline-flex items-center rounded-lg border border-emerald-200 px-4 py-2 text-emerald-800 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Refresh
             </button>
@@ -258,6 +266,12 @@ export default function Index() {
                         </Link>
                         <button
                           onClick={async () => {
+                            if (!hasSupabaseEnv) {
+                              alert(
+                                "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+                              );
+                              return;
+                            }
                             if (!confirm("Delete this project?")) return;
                             const { error } = await supabase
                               .from("chittoor_project_approvals")
