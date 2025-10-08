@@ -5,11 +5,33 @@ import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ProjectForm from "./pages/projects/ProjectForm";
 
 const queryClient = new QueryClient();
+
+const Layout = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen flex flex-col">
+    <nav className="sticky top-0 z-30 border-b border-emerald-200/70 bg-white/80 backdrop-blur">
+      <div className="container flex items-center justify-between py-4">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-md bg-emerald-600" />
+          <span className="text-lg font-extrabold tracking-tight text-emerald-900">Chittoor Projects</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/" className="rounded-md px-3 py-1.5 text-emerald-800 hover:bg-emerald-50">Dashboard</Link>
+          <Link to="/projects/new" className="rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">New Project</Link>
+        </div>
+      </div>
+    </nav>
+    <main className="flex-1">{children}</main>
+    <footer className="border-t border-emerald-200/70 bg-white/70">
+      <div className="container py-4 text-sm text-emerald-800/80">© AxisOGreen — Chittoor Projects</div>
+    </footer>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -17,11 +39,15 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/projects/new" element={<ProjectForm />} />
+            <Route path="/projects/:id/edit" element={<ProjectForm />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
