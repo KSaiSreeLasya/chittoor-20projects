@@ -4,7 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
-import type { ChittoorProject, SiteVisitStatus } from "@shared/api";
+import type {
+  ChittoorProject,
+  SiteVisitStatus,
+  SubsidyScope,
+} from "@shared/api";
 
 const schema = z.object({
   project_name: z.string().min(2, "Required"),
@@ -101,8 +105,7 @@ export default function ProjectForm() {
         biller_name: p.biller_name ?? "",
       customer_mobile_number: p.customer_mobile_number ?? "",
       site_visitor_name: p.site_visitor_name ?? "",
-      subsidy_scope:
-        (p.subsidy_scope as "Axiso" | "Customer" | null) ?? "Axiso",
+      subsidy_scope: (p.subsidy_scope as SubsidyScope | null) ?? "Axiso",
     });
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
