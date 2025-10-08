@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
 
 interface AuthContextValue {
   user: { id: string; email: string | null } | null;
@@ -15,6 +15,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!hasSupabaseEnv) {
+      setLoading(false);
+      return;
+    }
+
     const init = async () => {
       const { data } = await supabase.auth.getSession();
       setUser(
@@ -24,16 +29,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       );
       setLoading(false);
     };
+
     void init();
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(
-        session?.user
-          ? { id: session.user.id, email: session.user.email }
-          : null,
-      );
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(
+          session?.user
+            ? { id: session.user.id, email: session.user.email }
+            : null,
+        );
+      },
+    );
+
     return () => {
-      sub.subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, []);
 
@@ -42,6 +51,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       loading,
       signIn: async (email, password) => {
+        if (!hasSupabaseEnv) {
+          return {
+            error:
+              "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+          };
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -50,6 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return {};
       },
       signOut: async () => {
+        if (!hasSupabaseEnv) return;
         await supabase.auth.signOut();
       },
     }),
