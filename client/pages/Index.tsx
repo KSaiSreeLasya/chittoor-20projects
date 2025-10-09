@@ -569,7 +569,7 @@ function ProjectsTab({
                 return (
                   <button
                     type="button"
-                    key={id || project.project_name || Math.random().toString(36)}
+                    key={id}
                     onClick={() => onSelect(id)}
                     className={`w-full rounded-xl border px-4 py-3 text-left transition ${
                       active
