@@ -212,7 +212,7 @@ export default function Index() {
       }
       setApprovals((prev) => prev.filter((project) => project.id !== id));
     },
-    [],
+    [setApprovals],
   );
 
   return (
