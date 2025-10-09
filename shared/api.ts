@@ -47,3 +47,21 @@ export interface UpsertChittoorProject
   > {
   id?: string;
 }
+
+export type ChitoorProjectRecord = {
+  id: string | number;
+  project_name?: string | null;
+  status?: string | null;
+  project_status?: string | null;
+  current_status?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  completion_date?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  location?: string | null;
+  village?: string | null;
+  mandal?: string | null;
+  capacity_kw?: number | null;
+  project_cost?: number | null;
+} & Record<string, unknown>;
