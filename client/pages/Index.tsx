@@ -294,6 +294,7 @@ export default function Index() {
               onFilterChange={setFilter}
               loading={approvalsLoading}
               error={approvalsError}
+              onDelete={handleApprovalDelete}
             />
           </TabsContent>
 
