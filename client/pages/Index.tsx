@@ -153,7 +153,8 @@ export default function Index() {
             if (payload.eventType === "UPDATE") {
               const updated = payload.new as ChitoorProjectRecord;
               return prev.map((p) =>
-                getProjectId(p) === getProjectId(updated) || p.id === (updated as any).id
+                getProjectId(p) === getProjectId(updated) ||
+                p.id === (updated as any).id
                   ? { ...p, ...updated }
                   : p,
               );
@@ -161,7 +162,9 @@ export default function Index() {
             if (payload.eventType === "DELETE") {
               const removed = payload.old as ChitoorProjectRecord;
               return prev.filter(
-                (p) => getProjectId(p) !== getProjectId(removed) && p.id !== (removed as any).id,
+                (p) =>
+                  getProjectId(p) !== getProjectId(removed) &&
+                  p.id !== (removed as any).id,
               );
             }
             return prev;
@@ -772,7 +775,12 @@ interface AnalyticsTabProps {
   approvalCounts: Record<ApprovalFilter, number>;
 }
 
-function AnalyticsTab({ data, loading, projectSummary, approvalCounts }: AnalyticsTabProps) {
+function AnalyticsTab({
+  data,
+  loading,
+  projectSummary,
+  approvalCounts,
+}: AnalyticsTabProps) {
   if (loading && data.length === 0) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-white p-6 text-center text-emerald-700">
@@ -847,21 +855,41 @@ function AnalyticsTab({ data, loading, projectSummary, approvalCounts }: Analyti
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-emerald-900">Monthly comparison</h3>
+        <h3 className="text-lg font-semibold text-emerald-900">
+          Monthly comparison
+        </h3>
         <p className="text-sm text-emerald-700/80">
-          Track how CRM approvals compare with on-ground Chittoor project progress.
+          Track how CRM approvals compare with on-ground Chittoor project
+          progress.
         </p>
       </div>
       <div className="h-80 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} barCategoryGap="24%" barGap={4} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+          <BarChart
+            data={data}
+            barCategoryGap="24%"
+            barGap={4}
+            margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#d1fae5" />
             <XAxis dataKey="month" stroke="#065f46" />
             <YAxis allowDecimals={false} stroke="#065f46" />
             <RechartsTooltip cursor={{ fill: "rgba(16, 185, 129, 0.05)" }} />
             <Legend />
-            <Bar dataKey="approvals" name="Approvals" fill="#059669" maxBarSize={28} radius={[4, 4, 0, 0]} />
-            <Bar dataKey="projects" name="Chittoor Projects" fill="#22c55e" maxBarSize={28} radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="approvals"
+              name="Approvals"
+              fill="#059669"
+              maxBarSize={28}
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="projects"
+              name="Chittoor Projects"
+              fill="#22c55e"
+              maxBarSize={28}
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
