@@ -23,6 +23,8 @@ export interface ChittoorProject {
   date: string | null; // ISO string
   capacity_kw: number | null;
   location: string | null;
+  village: string | null;
+  mandal: string | null;
   power_bill_number: string | null;
   project_cost: number | null;
   site_visit_status: SiteVisitStatus | null;
@@ -34,6 +36,7 @@ export interface ChittoorProject {
   customer_mobile_number: string | null;
   site_visitor_name: string | null;
   subsidy_scope: SubsidyScope | null;
+  images: string[] | null;
   approval_status: ApprovalStatus; // managed by crm.axisogreen.in
   approval_updated_at: string | null;
 }
