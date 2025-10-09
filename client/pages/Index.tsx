@@ -447,20 +447,8 @@ function ApprovalsTab({
                       </Link>
                       <button
                         onClick={async () => {
-                          if (!hasSupabaseEnv) {
-                            alert(
-                              "Supabase not configured. Click Open MCP popover and connect to Supabase.",
-                            );
-                            return;
-                          }
                           if (!confirm("Delete this project?")) return;
-                          const { error } = await supabase
-                            .from("chittoor_project_approvals")
-                            .delete()
-                            .eq("id", p.id);
-                          if (!error)
-                            setApprovals((prev) => prev.filter((x) => x.id !== p.id));
-                          else alert(error.message);
+                          await onDelete(p.id);
                         }}
                         className="rounded-md border border-red-200 px-2 py-1 text-red-700 hover:bg-red-50"
                       >
