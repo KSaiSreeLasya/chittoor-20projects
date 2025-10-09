@@ -583,7 +583,7 @@ function ProjectsTab({
           title="Completed Projects"
           value={summary.completed}
           subtitle="Successfully delivered"
-          icon="✅"
+          icon="��"
           accent="from-emerald-500/20 to-emerald-500/40"
         />
       </div>
@@ -920,73 +920,14 @@ function deriveProjectStatus(project: ChitoorProjectRecord): DerivedStatus {
     "state",
   ]);
 
-  if (statusValue) {
-    const normalized = statusValue.trim().toLowerCase();
-    if (
-      [
-        "completed",
-        "complete",
-        "done",
-        "finished",
-        "delivered",
-        "successfully delivered",
-        "commissioned",
-        "installed",
-        "handover",
-        "handed over",
-        "closed",
-      ].includes(normalized)
-    ) {
-      return "completed";
-    }
-    if (
-      [
-        "active",
-        "in progress",
-        "in-progress",
-        "inprogress",
-        "ongoing",
-        "processing",
-        "running",
-        "pending",
-        "initiated",
-        "material pending",
-        "materials pending",
-        "under installation",
-        "wip",
-        "work in progress",
-        "site survey",
-        "quotation",
-      ].includes(normalized)
-    ) {
-      return "active";
-    }
+  const normalized = (statusValue || "").trim().toLowerCase();
+
+  // Only explicit "completed" is treated as completed; everything else is Active
+  if (normalized === "completed") {
+    return "completed";
   }
 
-  const completionDate = parseDateValue(
-    pickFirstValue(project, ["completion_date", "end_date", "project_end_date"]),
-  );
-  if (completionDate) return "completed";
-
-  const percent = Number(
-    pickFirstValue(project, ["completion_percentage", "progress_percent", "progress"]),
-  );
-  if (!Number.isNaN(percent)) {
-    if (percent >= 100) return "completed";
-    if (percent > 0) return "active";
-  }
-
-  const completeFlag = toBoolean(
-    pickFirstValue(project, ["is_completed", "completed", "isComplete"]),
-  );
-  if (completeFlag === true) return "completed";
-
-  const activeFlag = toBoolean(
-    pickFirstValue(project, ["is_active", "active", "isActive"]),
-  );
-  if (activeFlag === true) return "active";
-
-  return "other";
+  return "active";
 }
 
 function getProjectStatusLabel(project: ChitoorProjectRecord): string {
@@ -1042,7 +983,7 @@ function parseDateValue(value: unknown): Date | null {
 
 function formatDateValue(value: unknown): string {
   const date = parseDateValue(value);
-  if (!date) return "���";
+  if (!date) return "—";
   return format(date, "dd MMM yyyy");
 }
 
