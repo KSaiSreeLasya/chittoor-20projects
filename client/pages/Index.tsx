@@ -724,8 +724,15 @@ function AnalyticsTab({ data, loading }: AnalyticsTabProps) {
 
 function getProjectId(project: ChitoorProjectRecord): string {
   const raw = project.id;
-  if (raw === null || raw === undefined) return "";
-  return String(raw);
+  if (raw !== null && raw !== undefined) {
+    const text = String(raw).trim();
+    if (text) return text;
+  }
+  const fallbackName = pickFirstValue<string>(project, ["project_name", "name", "title"]);
+  if (fallbackName && fallbackName.trim()) return fallbackName.trim();
+  const created = pickFirstValue<string>(project, ["created_at"]);
+  if (created && String(created).trim()) return `created-${String(created).trim()}`;
+  return JSON.stringify(project);
 }
 
 function getProjectName(project: ChitoorProjectRecord): string {
