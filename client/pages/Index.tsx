@@ -328,6 +328,7 @@ interface ApprovalsTabProps {
   onFilterChange: (filter: ApprovalFilter) => void;
   loading: boolean;
   error: string | null;
+  onDelete: (id: string) => Promise<void> | void;
 }
 
 function ApprovalsTab({
@@ -337,6 +338,7 @@ function ApprovalsTab({
   onFilterChange,
   loading,
   error,
+  onDelete,
 }: ApprovalsTabProps) {
   return (
     <div className="space-y-6">
