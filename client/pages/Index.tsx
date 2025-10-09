@@ -45,7 +45,9 @@ export default function Index() {
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsError, setProjectsError] = useState<string | null>(null);
   const [projectsFetched, setProjectsFetched] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
 
   const fetchApprovals = useCallback(async () => {
     if (!hasSupabaseEnv) {
@@ -121,7 +123,9 @@ export default function Index() {
               );
             }
             if (payload.eventType === "DELETE") {
-              return prev.filter((p) => p.id !== (payload.old as ChittoorProject).id);
+              return prev.filter(
+                (p) => p.id !== (payload.old as ChittoorProject).id,
+              );
             }
             return prev;
           });
@@ -231,7 +235,8 @@ export default function Index() {
                 Chittoor Projects
               </h1>
               <p className="mt-2 text-emerald-700/80">
-                Track project details, request payments, and view CRM approvals in real time.
+                Track project details, request payments, and view CRM approvals
+                in real time.
               </p>
             </div>
           </div>
@@ -263,8 +268,8 @@ export default function Index() {
           <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
             <p className="font-semibold">Supabase not configured</p>
             <p className="mt-1 text-sm">
-              Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. You can connect Supabase via MCP. Click
-              {" "}
+              Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. You can connect
+              Supabase via MCP. Click{" "}
               <a className="underline" href="#open-mcp-popover">
                 Open MCP popover
               </a>{" "}
@@ -313,7 +318,10 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <AnalyticsTab data={analyticsData} loading={approvalsLoading || projectsLoading} />
+            <AnalyticsTab
+              data={analyticsData}
+              loading={approvalsLoading || projectsLoading}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -368,11 +376,17 @@ function ApprovalsTab({
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">Project</th>
                 <th className="px-4 py-3 text-left font-semibold">Date</th>
-                <th className="px-4 py-3 text-left font-semibold">Capacity (kW)</th>
+                <th className="px-4 py-3 text-left font-semibold">
+                  Capacity (kW)
+                </th>
                 <th className="px-4 py-3 text-left font-semibold">Location</th>
-                <th className="px-4 py-3 text-left font-semibold">Power Bill #</th>
+                <th className="px-4 py-3 text-left font-semibold">
+                  Power Bill #
+                </th>
                 <th className="px-4 py-3 text-left font-semibold">Cost</th>
-                <th className="px-4 py-3 text-left font-semibold">Site Visit</th>
+                <th className="px-4 py-3 text-left font-semibold">
+                  Site Visit
+                </th>
                 <th className="px-4 py-3 text-left font-semibold">Payment</th>
                 <th className="px-4 py-3 text-left font-semibold">Approval</th>
                 <th className="px-4 py-3 text-right font-semibold">Actions</th>
@@ -381,21 +395,30 @@ function ApprovalsTab({
             <tbody>
               {loading && (
                 <tr>
-                  <td className="px-4 py-6 text-center text-emerald-700" colSpan={10}>
+                  <td
+                    className="px-4 py-6 text-center text-emerald-700"
+                    colSpan={10}
+                  >
                     Loading projects…
                   </td>
                 </tr>
               )}
               {error && (
                 <tr>
-                  <td className="px-4 py-6 text-center text-red-600" colSpan={10}>
+                  <td
+                    className="px-4 py-6 text-center text-red-600"
+                    colSpan={10}
+                  >
                     {error}
                   </td>
                 </tr>
               )}
               {!loading && !error && approvals.length === 0 && (
                 <tr>
-                  <td className="px-4 py-10 text-center text-emerald-700" colSpan={10}>
+                  <td
+                    className="px-4 py-10 text-center text-emerald-700"
+                    colSpan={10}
+                  >
                     No projects yet. Create your first project.
                   </td>
                 </tr>
@@ -411,18 +434,24 @@ function ApprovalsTab({
                   <td className="px-4 py-3 text-emerald-800">
                     {p.capacity_kw ?? "—"}
                   </td>
-                  <td className="px-4 py-3 text-emerald-800">{p.location ?? "—"}</td>
+                  <td className="px-4 py-3 text-emerald-800">
+                    {p.location ?? "—"}
+                  </td>
                   <td className="px-4 py-3 text-emerald-800">
                     {p.power_bill_number ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-emerald-800">
-                    {p.project_cost ? `₹${p.project_cost.toLocaleString()}` : "—"}
+                    {p.project_cost
+                      ? `₹${p.project_cost.toLocaleString()}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-3 text-emerald-800">
                     {p.site_visit_status ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-emerald-800">
-                    {p.payment_amount ? `₹${p.payment_amount.toLocaleString()}` : "—"}
+                    {p.payment_amount
+                      ? `₹${p.payment_amount.toLocaleString()}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -430,8 +459,8 @@ function ApprovalsTab({
                         p.approval_status === "approved"
                           ? "bg-emerald-100 text-emerald-800"
                           : p.approval_status === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-amber-100 text-amber-800"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-amber-100 text-amber-800"
                       }`}
                     >
                       {p.approval_status}
@@ -464,7 +493,8 @@ function ApprovalsTab({
       </div>
 
       <p className="text-sm text-emerald-800/80">
-        Approval status is synced from crm.axisogreen.in via shared Supabase. This app shows latest status and details.
+        Approval status is synced from crm.axisogreen.in via shared Supabase.
+        This app shows latest status and details.
       </p>
     </div>
   );
@@ -521,7 +551,9 @@ function ProjectsTab({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-emerald-900">Chittoor project list</h2>
+          <h2 className="text-xl font-semibold text-emerald-900">
+            Chittoor project list
+          </h2>
           <p className="text-sm text-emerald-700/80">
             Browse all projects sourced from the chitoor_projects table.
           </p>
@@ -538,7 +570,9 @@ function ProjectsTab({
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
           {loading && (
-            <p className="py-6 text-center text-emerald-700">Loading projects…</p>
+            <p className="py-6 text-center text-emerald-700">
+              Loading projects…
+            </p>
           )}
           {error && (
             <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-center text-sm text-red-700">
@@ -583,17 +617,21 @@ function ProjectsTab({
                           {getProjectName(project)}
                         </h3>
                         {location && (
-                          <p className="text-sm text-emerald-700/80">{location}</p>
+                          <p className="text-sm text-emerald-700/80">
+                            {location}
+                          </p>
                         )}
-                        <p className="text-xs text-emerald-700/70">Created {createdDate}</p>
+                        <p className="text-xs text-emerald-700/70">
+                          Created {createdDate}
+                        </p>
                       </div>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
                           statusTag === "completed"
                             ? "bg-emerald-100 text-emerald-800"
                             : statusTag === "active"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-emerald-50 text-emerald-700"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-emerald-50 text-emerald-700"
                         }`}
                       >
                         {statusLabel}
@@ -620,7 +658,13 @@ interface SummaryCardProps {
   accent: string;
 }
 
-function SummaryCard({ title, value, subtitle, icon, accent }: SummaryCardProps) {
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  icon,
+  accent,
+}: SummaryCardProps) {
   return (
     <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
@@ -629,7 +673,9 @@ function SummaryCard({ title, value, subtitle, icon, accent }: SummaryCardProps)
           <h3 className="text-2xl font-bold text-emerald-900">{value}</h3>
           <p className="text-sm text-emerald-700/70">{title}</p>
         </div>
-        <span className={`grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br ${accent}`}>
+        <span
+          className={`grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br ${accent}`}
+        >
           <span className="text-xl">{icon}</span>
         </span>
       </div>
@@ -654,10 +700,15 @@ function ProjectDetailsPanel({ project }: ProjectDetailsPanelProps) {
 
   return (
     <div className="rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-emerald-900">Project details</h3>
+      <h3 className="text-lg font-semibold text-emerald-900">
+        Project details
+      </h3>
       <dl className="mt-4 space-y-3">
         {entries.map((entry) => (
-          <div key={`${entry.label}`} className="grid grid-cols-3 gap-2 text-sm">
+          <div
+            key={`${entry.label}`}
+            className="grid grid-cols-3 gap-2 text-sm"
+          >
             <dt className="text-emerald-700/80">{entry.label}</dt>
             <dd className="col-span-2 font-medium text-emerald-900 break-words whitespace-pre-wrap">
               {entry.value}
@@ -700,9 +751,12 @@ function AnalyticsTab({ data, loading }: AnalyticsTabProps) {
   return (
     <div className="space-y-4 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">
       <div>
-        <h3 className="text-lg font-semibold text-emerald-900">Monthly comparison</h3>
+        <h3 className="text-lg font-semibold text-emerald-900">
+          Monthly comparison
+        </h3>
         <p className="text-sm text-emerald-700/80">
-          Track how CRM approvals compare with on-ground Chittoor project progress.
+          Track how CRM approvals compare with on-ground Chittoor project
+          progress.
         </p>
       </div>
       <div className="h-80 w-full">
@@ -713,8 +767,18 @@ function AnalyticsTab({ data, loading }: AnalyticsTabProps) {
             <YAxis allowDecimals={false} stroke="#065f46" />
             <RechartsTooltip cursor={{ fill: "rgba(16, 185, 129, 0.05)" }} />
             <Legend />
-            <Bar dataKey="approvals" name="Approvals" fill="#059669" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="projects" name="Chittoor Projects" fill="#22c55e" radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="approvals"
+              name="Approvals"
+              fill="#059669"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="projects"
+              name="Chittoor Projects"
+              fill="#22c55e"
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -728,15 +792,24 @@ function getProjectId(project: ChitoorProjectRecord): string {
     const text = String(raw).trim();
     if (text) return text;
   }
-  const fallbackName = pickFirstValue<string>(project, ["project_name", "name", "title"]);
+  const fallbackName = pickFirstValue<string>(project, [
+    "project_name",
+    "name",
+    "title",
+  ]);
   if (fallbackName && fallbackName.trim()) return fallbackName.trim();
   const created = pickFirstValue<string>(project, ["created_at"]);
-  if (created && String(created).trim()) return `created-${String(created).trim()}`;
+  if (created && String(created).trim())
+    return `created-${String(created).trim()}`;
   return JSON.stringify(project);
 }
 
 function getProjectName(project: ChitoorProjectRecord): string {
-  const name = pickFirstValue<string>(project, ["project_name", "name", "title"]);
+  const name = pickFirstValue<string>(project, [
+    "project_name",
+    "name",
+    "title",
+  ]);
   if (name && name.trim()) return name;
   const id = getProjectId(project);
   return id ? `Project ${id}` : "Unnamed project";
@@ -766,7 +839,11 @@ function deriveProjectStatus(project: ChitoorProjectRecord): DerivedStatus {
 
   if (statusValue) {
     const normalized = statusValue.trim().toLowerCase();
-    if (["completed", "complete", "done", "finished", "closed"].includes(normalized)) {
+    if (
+      ["completed", "complete", "done", "finished", "closed"].includes(
+        normalized,
+      )
+    ) {
       return "completed";
     }
     if (
@@ -790,7 +867,9 @@ function deriveProjectStatus(project: ChitoorProjectRecord): DerivedStatus {
   );
   if (completeFlag === true) return "completed";
 
-  const activeFlag = toBoolean(pickFirstValue(project, ["is_active", "active", "isActive"]));
+  const activeFlag = toBoolean(
+    pickFirstValue(project, ["is_active", "active", "isActive"]),
+  );
   if (activeFlag === true) return "active";
 
   return "other";
@@ -886,7 +965,10 @@ function getProjectDetailsEntries(
       keys: ["status", "project_status", "current_status", "stage", "state"],
       label: "Status",
     },
-    { keys: ["location", "village", "mandal", "district", "address"], label: "Location" },
+    {
+      keys: ["location", "village", "mandal", "district", "address"],
+      label: "Location",
+    },
     { keys: ["start_date", "project_start_date"], label: "Start Date" },
     {
       keys: ["completion_date", "end_date", "project_end_date"],
@@ -900,7 +982,11 @@ function getProjectDetailsEntries(
 
   for (const group of fieldGroups) {
     for (const key of group.keys) {
-      if (project[key] !== undefined && project[key] !== null && project[key] !== "") {
+      if (
+        project[key] !== undefined &&
+        project[key] !== null &&
+        project[key] !== ""
+      ) {
         pushEntry(key, group.label);
         break;
       }
@@ -936,13 +1022,12 @@ function buildMonthlyAnalytics(
     if (!parsed) return;
     const monthDate = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
     const label = format(monthDate, "MMM yyyy");
-    const existing =
-      map.get(label) ?? {
-        month: label,
-        timestamp: monthDate.getTime(),
-        approvals: 0,
-        projects: 0,
-      };
+    const existing = map.get(label) ?? {
+      month: label,
+      timestamp: monthDate.getTime(),
+      approvals: 0,
+      projects: 0,
+    };
     existing[key] += 1;
     map.set(label, existing);
   };
