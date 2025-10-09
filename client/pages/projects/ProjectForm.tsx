@@ -135,7 +135,9 @@ export default function ProjectForm() {
         site_visitor_name: p.site_visitor_name ?? "",
         subsidy_scope: (p.subsidy_scope as SubsidyScope | null) ?? "Axiso",
       });
-      const imgs = Array.isArray((p as any).images) ? ((p as any).images as string[]) : [];
+      const imgs = Array.isArray((p as any).images)
+        ? ((p as any).images as string[])
+        : [];
       setExistingImages(imgs);
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
@@ -318,7 +320,10 @@ export default function ProjectForm() {
                   const val = e.target.value;
                   if (val && mapping.length) {
                     const rec = mapping.find((r) => r.village === val);
-                    form.setValue("mandal", rec ? rec.mandal : form.getValues("mandal") ?? "");
+                    form.setValue(
+                      "mandal",
+                      rec ? rec.mandal : (form.getValues("mandal") ?? ""),
+                    );
                   }
                 }}
               />
