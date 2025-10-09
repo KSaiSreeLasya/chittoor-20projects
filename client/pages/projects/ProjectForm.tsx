@@ -13,8 +13,10 @@ import type {
 const schema = z.object({
   project_name: z.string().min(2, "Required"),
   date: z.string().optional().or(z.literal("")),
-  capacity_kw: z.enum(["2", "3"]).nullable().optional(), // Updated: select type
+  capacity_kw: z.enum(["2", "3"]).nullable().optional(),
   location: z.string().nullable().optional(),
+  village: z.string().nullable().optional(),
+  mandal: z.string().nullable().optional(),
   power_bill_number: z.string().nullable().optional(),
   project_cost: z.coerce.number().min(0).nullable().optional(),
   site_visit_status: z
@@ -41,6 +43,11 @@ export default function ProjectForm() {
   const isEdit = Boolean(id);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [mapping, setMapping] = useState<{ mandal: string; village: string }[]>(
+    [],
+  );
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -49,6 +56,8 @@ export default function ProjectForm() {
       date: "",
       capacity_kw: undefined,
       location: "",
+      village: "",
+      mandal: "",
       power_bill_number: "",
       project_cost: undefined,
       site_visit_status: "Planned",
@@ -67,6 +76,24 @@ export default function ProjectForm() {
     if (!id || !hasSupabaseEnv) return;
     void load();
   }, [id]);
+
+  // Load mandal/village mapping from Supabase if available
+  useEffect(() => {
+    if (!hasSupabaseEnv) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from("mandal_villages")
+        .select("mandal,village");
+      if (!error && Array.isArray(data)) {
+        setMapping(
+          (data as any[]).map((r) => ({
+            mandal: String(r.mandal || "").trim(),
+            village: String(r.village || "").trim(),
+          })),
+        );
+      }
+    })();
+  }, []);
 
   const load = async () => {
     if (!hasSupabaseEnv) {
@@ -91,8 +118,10 @@ export default function ProjectForm() {
         capacity_kw:
           p.capacity_kw !== null && p.capacity_kw !== undefined
             ? (String(p.capacity_kw) as "2" | "3")
-            : undefined, // ✅ Handle as string
+            : undefined,
         location: p.location ?? "",
+        village: (p as any).village ?? "",
+        mandal: (p as any).mandal ?? "",
         power_bill_number: p.power_bill_number ?? "",
         project_cost: p.project_cost ?? undefined,
         site_visit_status:
@@ -106,6 +135,8 @@ export default function ProjectForm() {
         site_visitor_name: p.site_visitor_name ?? "",
         subsidy_scope: (p.subsidy_scope as SubsidyScope | null) ?? "Axiso",
       });
+      const imgs = Array.isArray((p as any).images) ? ((p as any).images as string[]) : [];
+      setExistingImages(imgs);
     } catch (e: any) {
       setLoadError(e.message || "Failed to load project");
     } finally {
@@ -132,18 +163,45 @@ export default function ProjectForm() {
         date: values.date ? new Date(values.date).toISOString() : null,
       } as any;
 
+      let targetId = id ?? null;
+
       if (isEdit) {
         const { error } = await supabase
           .from("chittoor_project_approvals")
           .update(payload)
           .eq("id", id!);
         if (error) throw error;
+        targetId = id!;
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("chittoor_project_approvals")
-          .insert({ ...payload, approval_status: "pending" });
+          .insert({ ...payload, approval_status: "pending" })
+          .select("id")
+          .single();
         if (error) throw error;
+        targetId = (data as any).id as string;
       }
+
+      if (imageFiles.length && targetId) {
+        const urls: string[] = [...existingImages];
+        for (const file of imageFiles) {
+          const path = `${targetId}/${Date.now()}-${file.name}`;
+          const { error: upErr } = await supabase.storage
+            .from("project-images")
+            .upload(path, file, { upsert: false });
+          if (upErr) throw upErr;
+          const { data: pub } = supabase.storage
+            .from("project-images")
+            .getPublicUrl(path);
+          if (pub?.publicUrl) urls.push(pub.publicUrl);
+        }
+        const { error: updErr } = await supabase
+          .from("chittoor_project_approvals")
+          .update({ images: urls })
+          .eq("id", targetId);
+        if (updErr) throw updErr;
+      }
+
       navigate("/");
     } catch (e: any) {
       alert(e.message || "Save failed");
@@ -205,6 +263,12 @@ export default function ProjectForm() {
             <select
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("capacity_kw")}
+              onChange={(e) => {
+                const value = e.target.value as "2" | "3" | "";
+                form.setValue("capacity_kw", value || undefined);
+                if (value === "2") form.setValue("project_cost", 148000);
+                if (value === "3") form.setValue("project_cost", 205000);
+              }}
             >
               <option value="">Select</option>
               <option value="2">2 kW</option>
@@ -218,6 +282,56 @@ export default function ProjectForm() {
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("location")}
+            />
+          </div>
+
+          {/* Village (auto-fills Mandal) */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Village</label>
+            {mapping.length > 0 ? (
+              <select
+                className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                value={form.watch("village") ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  form.setValue("village", v);
+                  const rec = mapping.find((r) => r.village === v);
+                  form.setValue("mandal", rec ? rec.mandal : "");
+                }}
+              >
+                <option value="">Select village</option>
+                {Array.from(new Set(mapping.map((r) => r.village)))
+                  .filter(Boolean)
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+              </select>
+            ) : (
+              <input
+                className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Enter village"
+                {...form.register("village")}
+                onBlur={(e) => {
+                  const val = e.target.value;
+                  if (val && mapping.length) {
+                    const rec = mapping.find((r) => r.village === val);
+                    form.setValue("mandal", rec ? rec.mandal : form.getValues("mandal") ?? "");
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          {/* Mandal (auto-filled) */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Mandal</label>
+            <input
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("mandal")}
+              readOnly={mapping.length > 0}
             />
           </div>
 
@@ -248,12 +362,18 @@ export default function ProjectForm() {
           {/* Project Cost */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Project Cost (₹)</label>
-            <input
-              type="number"
-              step="0.01"
+            <select
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-              {...form.register("project_cost", { valueAsNumber: true })}
-            />
+              value={form.watch("project_cost") ?? ""}
+              onChange={(e) => {
+                const n = e.target.value ? Number(e.target.value) : undefined;
+                form.setValue("project_cost", (n as any) ?? undefined);
+              }}
+            >
+              <option value="">Select</option>
+              <option value={148000}>₹148,000</option>
+              <option value={205000}>₹205,000</option>
+            </select>
           </div>
 
           {/* Site Visit Status */}
@@ -343,6 +463,30 @@ export default function ProjectForm() {
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("biller_name")}
             />
+          </div>
+
+          {/* Images */}
+          <div className="space-y-1 md:col-span-2">
+            <label className="text-sm font-medium">Upload Images</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2"
+              onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
+            />
+            {existingImages.length > 0 && (
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {existingImages.map((url) => (
+                  <img
+                    key={url}
+                    src={url}
+                    alt="project"
+                    className="h-24 w-full rounded-md object-cover border border-emerald-200"
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Approval Note */}
