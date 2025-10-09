@@ -137,6 +137,43 @@ export default function Index() {
     };
   }, []);
 
+  // Realtime sync for Chittoor projects as data changes
+  useEffect(() => {
+    if (!hasSupabaseEnv) return;
+    const channel = supabase
+      .channel("chittoor-projects")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chitoor_projects" },
+        (payload: any) => {
+          setProjects((prev) => {
+            if (payload.eventType === "INSERT") {
+              return [payload.new as ChitoorProjectRecord, ...prev];
+            }
+            if (payload.eventType === "UPDATE") {
+              const updated = payload.new as ChitoorProjectRecord;
+              return prev.map((p) =>
+                getProjectId(p) === getProjectId(updated) || p.id === (updated as any).id
+                  ? { ...p, ...updated }
+                  : p,
+              );
+            }
+            if (payload.eventType === "DELETE") {
+              const removed = payload.old as ChitoorProjectRecord;
+              return prev.filter(
+                (p) => getProjectId(p) !== getProjectId(removed) && p.id !== (removed as any).id,
+              );
+            }
+            return prev;
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     if (!hasSupabaseEnv || projectsFetched) return;
     if (activeTab === "projects" || activeTab === "analytics") {
@@ -321,6 +358,8 @@ export default function Index() {
             <AnalyticsTab
               data={analyticsData}
               loading={approvalsLoading || projectsLoading}
+              projectSummary={projectsSummary}
+              approvalCounts={statusCounts}
             />
           </TabsContent>
         </Tabs>
@@ -729,9 +768,11 @@ interface AnalyticsPoint {
 interface AnalyticsTabProps {
   data: AnalyticsPoint[];
   loading: boolean;
+  projectSummary: { total: number; active: number; completed: number };
+  approvalCounts: Record<ApprovalFilter, number>;
 }
 
-function AnalyticsTab({ data, loading }: AnalyticsTabProps) {
+function AnalyticsTab({ data, loading, projectSummary, approvalCounts }: AnalyticsTabProps) {
   if (loading && data.length === 0) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-white p-6 text-center text-emerald-700">
@@ -749,36 +790,78 @@ function AnalyticsTab({ data, loading }: AnalyticsTabProps) {
   }
 
   return (
-    <div className="space-y-4 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">
+      <div className="grid gap-4 md:grid-cols-3">
+        <SummaryCard
+          title="Total Projects"
+          value={projectSummary.total}
+          subtitle="All projects"
+          icon="📁"
+          accent="from-emerald-500/20 to-emerald-500/40"
+        />
+        <SummaryCard
+          title="Active Projects"
+          value={projectSummary.active}
+          subtitle="In progress"
+          icon="📊"
+          accent="from-blue-500/20 to-blue-500/40"
+        />
+        <SummaryCard
+          title="Completed Projects"
+          value={projectSummary.completed}
+          subtitle="Successfully delivered"
+          icon="✅"
+          accent="from-emerald-500/20 to-emerald-500/40"
+        />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <SummaryCard
+          title="Total Approvals"
+          value={approvalCounts.all}
+          subtitle="All"
+          icon="📝"
+          accent="from-emerald-500/20 to-emerald-500/40"
+        />
+        <SummaryCard
+          title="Pending"
+          value={approvalCounts.pending}
+          subtitle="Waiting"
+          icon="⏳"
+          accent="from-amber-500/20 to-amber-500/40"
+        />
+        <SummaryCard
+          title="Approved"
+          value={approvalCounts.approved}
+          subtitle="Greenlit"
+          icon="✅"
+          accent="from-emerald-500/20 to-emerald-500/40"
+        />
+        <SummaryCard
+          title="Rejected"
+          value={approvalCounts.rejected}
+          subtitle="Declined"
+          icon="❌"
+          accent="from-red-500/20 to-red-500/40"
+        />
+      </div>
+
       <div>
-        <h3 className="text-lg font-semibold text-emerald-900">
-          Monthly comparison
-        </h3>
+        <h3 className="text-lg font-semibold text-emerald-900">Monthly comparison</h3>
         <p className="text-sm text-emerald-700/80">
-          Track how CRM approvals compare with on-ground Chittoor project
-          progress.
+          Track how CRM approvals compare with on-ground Chittoor project progress.
         </p>
       </div>
       <div className="h-80 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
+          <BarChart data={data} barCategoryGap="24%" barGap={4} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#d1fae5" />
             <XAxis dataKey="month" stroke="#065f46" />
             <YAxis allowDecimals={false} stroke="#065f46" />
             <RechartsTooltip cursor={{ fill: "rgba(16, 185, 129, 0.05)" }} />
             <Legend />
-            <Bar
-              dataKey="approvals"
-              name="Approvals"
-              fill="#059669"
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar
-              dataKey="projects"
-              name="Chittoor Projects"
-              fill="#22c55e"
-              radius={[4, 4, 0, 0]}
-            />
+            <Bar dataKey="approvals" name="Approvals" fill="#059669" maxBarSize={28} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="projects" name="Chittoor Projects" fill="#22c55e" maxBarSize={28} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -840,9 +923,19 @@ function deriveProjectStatus(project: ChitoorProjectRecord): DerivedStatus {
   if (statusValue) {
     const normalized = statusValue.trim().toLowerCase();
     if (
-      ["completed", "complete", "done", "finished", "closed"].includes(
-        normalized,
-      )
+      [
+        "completed",
+        "complete",
+        "done",
+        "finished",
+        "delivered",
+        "successfully delivered",
+        "commissioned",
+        "installed",
+        "handover",
+        "handed over",
+        "closed",
+      ].includes(normalized)
     ) {
       return "completed";
     }
@@ -851,15 +944,36 @@ function deriveProjectStatus(project: ChitoorProjectRecord): DerivedStatus {
         "active",
         "in progress",
         "in-progress",
+        "inprogress",
         "ongoing",
         "processing",
         "running",
         "pending",
         "initiated",
+        "material pending",
+        "materials pending",
+        "under installation",
+        "wip",
+        "work in progress",
+        "site survey",
+        "quotation",
       ].includes(normalized)
     ) {
       return "active";
     }
+  }
+
+  const completionDate = parseDateValue(
+    pickFirstValue(project, ["completion_date", "end_date", "project_end_date"]),
+  );
+  if (completionDate) return "completed";
+
+  const percent = Number(
+    pickFirstValue(project, ["completion_percentage", "progress_percent", "progress"]),
+  );
+  if (!Number.isNaN(percent)) {
+    if (percent >= 100) return "completed";
+    if (percent > 0) return "active";
   }
 
   const completeFlag = toBoolean(
@@ -928,7 +1042,7 @@ function parseDateValue(value: unknown): Date | null {
 
 function formatDateValue(value: unknown): string {
   const date = parseDateValue(value);
-  if (!date) return "—";
+  if (!date) return "���";
   return format(date, "dd MMM yyyy");
 }
 
