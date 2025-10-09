@@ -137,6 +137,18 @@ export default function ProjectDetails() {
                   </dd>
                 </div>
                 <div>
+                  <dt className="text-sm text-emerald-700/80">Village</dt>
+                  <dd className="font-medium text-emerald-900">
+                    {(p as any).village ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-emerald-700/80">Mandal</dt>
+                  <dd className="font-medium text-emerald-900">
+                    {(p as any).mandal ?? "—"}
+                  </dd>
+                </div>
+                <div>
                   <dt className="text-sm text-emerald-700/80">
                     Customer Mobile Number
                   </dt>
@@ -169,6 +181,24 @@ export default function ProjectDetails() {
                   </dd>
                 </div>
               </dl>
+              {Array.isArray((p as any).images) &&
+                (p as any).images.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="mb-2 text-sm font-semibold text-emerald-900">
+                      Images
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                      {((p as any).images as string[]).map((url) => (
+                        <img
+                          key={url}
+                          src={url}
+                          alt="project"
+                          className="h-24 w-full rounded-md object-cover border border-emerald-200"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
 
             {/* --- Right Column: Status & Billing --- */}
