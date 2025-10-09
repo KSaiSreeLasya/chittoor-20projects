@@ -194,6 +194,27 @@ export default function Index() {
     [approvals, projects],
   );
 
+  const handleApprovalDelete = useCallback(
+    async (id: string) => {
+      if (!hasSupabaseEnv) {
+        alert(
+          "Supabase not configured. Click Open MCP popover and connect to Supabase.",
+        );
+        return;
+      }
+      const { error } = await supabase
+        .from("chittoor_project_approvals")
+        .delete()
+        .eq("id", id);
+      if (error) {
+        alert(error.message);
+        return;
+      }
+      setApprovals((prev) => prev.filter((project) => project.id !== id));
+    },
+    [],
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
       <div className="container py-10">
