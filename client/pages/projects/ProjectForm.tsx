@@ -266,9 +266,12 @@ export default function ProjectForm() {
   const _mandals = Array.from(
     new Set(mapping.map((r) => r.mandal).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b));
-  const filteredMandals = mandalFilter.trim().length >= 2
-    ? _mandals.filter((m) => m.toLowerCase().includes(mandalFilter.trim().toLowerCase()))
-    : _mandals;
+  const filteredMandals =
+    mandalFilter.trim().length >= 2
+      ? _mandals.filter((m) =>
+          m.toLowerCase().includes(mandalFilter.trim().toLowerCase()),
+        )
+      : _mandals;
 
   const selectedMandal = (form.watch("mandal") || "").trim();
   const villagesSource = selectedMandal
@@ -280,7 +283,8 @@ export default function ProjectForm() {
 
   const filteredVillages = (() => {
     const q = villageFilter.trim().toLowerCase();
-    if (q.length >= 3) return _villages.filter((v) => v.toLowerCase().includes(q));
+    if (q.length >= 3)
+      return _villages.filter((v) => v.toLowerCase().includes(q));
     if (selectedMandal) return _villages; // show mandal's villages when mandal selected
     return []; // require user to type 3+ letters or select mandal
   })();
