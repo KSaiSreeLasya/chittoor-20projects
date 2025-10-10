@@ -48,6 +48,7 @@ export default function ProjectForm() {
     [],
   );
   const [villageFilter, setVillageFilter] = useState("");
+  const [mandalFilter, setMandalFilter] = useState("");
   const [manualMode, setManualMode] = useState(false);
   const [manualVillage, setManualVillage] = useState("");
   const [manualMandal, setManualMandal] = useState("");
@@ -261,11 +262,14 @@ export default function ProjectForm() {
     }
   };
 
-  // compute unique villages and apply filter
   // compute unique mandals and villages, apply mandal filter and village text filter
   const _mandals = Array.from(
     new Set(mapping.map((r) => r.mandal).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b));
+  const filteredMandals = mandalFilter.trim().length >= 2
+    ? _mandals.filter((m) => m.toLowerCase().includes(mandalFilter.trim().toLowerCase()))
+    : _mandals;
+
   const selectedMandal = (form.watch("mandal") || "").trim();
   const villagesSource = selectedMandal
     ? mapping.filter((r) => r.mandal === selectedMandal).map((r) => r.village)
@@ -276,8 +280,7 @@ export default function ProjectForm() {
 
   const filteredVillages = (() => {
     const q = villageFilter.trim().toLowerCase();
-    if (q.length >= 3)
-      return _villages.filter((v) => v.toLowerCase().includes(q));
+    if (q.length >= 3) return _villages.filter((v) => v.toLowerCase().includes(q));
     if (selectedMandal) return _villages; // show mandal's villages when mandal selected
     return []; // require user to type 3+ letters or select mandal
   })();
@@ -354,6 +357,14 @@ export default function ProjectForm() {
             {mapping.length > 0 ? (
               <>
                 <label className="text-sm font-medium">Mandal</label>
+                <input
+                  type="text"
+                  placeholder="Type 2+ letters to filter mandals"
+                  className="w-full mb-2 rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={mandalFilter}
+                  onChange={(e) => setMandalFilter(e.target.value)}
+                />
+
                 <select
                   className="w-full mb-2 rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
                   value={form.watch("mandal") ?? ""}
@@ -373,7 +384,7 @@ export default function ProjectForm() {
                   }}
                 >
                   <option value="">All Mandals</option>
-                  {_mandals.map((m) => (
+                  {filteredMandals.map((m) => (
                     <option key={m} value={m}>
                       {m}
                     </option>
