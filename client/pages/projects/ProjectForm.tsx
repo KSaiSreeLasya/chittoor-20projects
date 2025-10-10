@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
+import villagesCSV from "./villages.csv?raw";
 import type {
   ChittoorProject,
   SiteVisitStatus,
@@ -46,6 +47,7 @@ export default function ProjectForm() {
   const [mapping, setMapping] = useState<{ mandal: string; village: string }[]>(
     [],
   );
+  const [villageFilter, setVillageFilter] = useState("");
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
@@ -77,20 +79,55 @@ export default function ProjectForm() {
     void load();
   }, [id]);
 
-  // Load mandal/village mapping from Supabase if available
+  // Load mandal/village mapping from Supabase if available; fall back to local CSV bundle
   useEffect(() => {
-    if (!hasSupabaseEnv) return;
+    const parseCSV = (csv: string) => {
+      const out: { mandal: string; village: string }[] = [];
+      csv.split(/\r?\n/).forEach((line) => {
+        const ln = line.trim();
+        if (!ln) return;
+        if (/^Village\s*,\s*Mandal$/i.test(ln)) return;
+        const idx = ln.lastIndexOf(",");
+        if (idx === -1) return;
+        const village = ln.slice(0, idx).trim();
+        const mandal = ln.slice(idx + 1).trim();
+        if (village && mandal) out.push({ village, mandal });
+      });
+      return out;
+    };
+
+    const local = parseCSV(villagesCSV || "");
+
+    if (!hasSupabaseEnv) {
+      // use local only
+      const uniq = Array.from(
+        new Map(local.map((r) => [r.village.toLowerCase(), r])).values(),
+      );
+      setMapping(uniq);
+      return;
+    }
+
     (async () => {
-      const { data, error } = await supabase
-        .from("mandal_villages")
-        .select("mandal,village");
-      if (!error && Array.isArray(data)) {
-        setMapping(
-          (data as any[]).map((r) => ({
-            mandal: String(r.mandal || "").trim(),
-            village: String(r.village || "").trim(),
-          })),
+      try {
+        const { data, error } = await supabase
+          .from("mandal_villages")
+          .select("mandal,village");
+        const supa = !error && Array.isArray(data)
+          ? (data as any[]).map((r) => ({
+              village: String(r.village || "").trim(),
+              mandal: String(r.mandal || "").trim(),
+            }))
+          : [];
+
+        const map = new Map<string, { mandal: string; village: string }>();
+        for (const r of local) map.set(r.village.toLowerCase(), r);
+        for (const r of supa) map.set(r.village.toLowerCase(), r);
+        setMapping(Array.from(map.values()));
+      } catch (err) {
+        const uniq = Array.from(
+          new Map(local.map((r) => [r.village.toLowerCase(), r])).values(),
         );
+        setMapping(uniq);
       }
     })();
   }, []);
