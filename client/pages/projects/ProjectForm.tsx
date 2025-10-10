@@ -231,7 +231,15 @@ export default function ProjectForm() {
           const { error: upErr } = await supabase.storage
             .from("project-images")
             .upload(path, file, { upsert: false });
-          if (upErr) throw upErr;
+          if (upErr) {
+            const msg = String(upErr.message || upErr).toLowerCase();
+            if (msg.includes("bucket") || msg.includes("not found")) {
+              throw new Error(
+                "Supabase storage bucket 'project-images' not found. Create the bucket in Supabase Storage or remove image uploads.",
+              );
+            }
+            throw upErr;
+          }
           const { data: pub } = supabase.storage
             .from("project-images")
             .getPublicUrl(path);
