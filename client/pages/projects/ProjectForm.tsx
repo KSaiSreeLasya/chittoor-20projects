@@ -48,6 +48,9 @@ export default function ProjectForm() {
     [],
   );
   const [villageFilter, setVillageFilter] = useState("");
+  const [manualMode, setManualMode] = useState(false);
+  const [manualVillage, setManualVillage] = useState("");
+  const [manualMandal, setManualMandal] = useState("");
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
@@ -344,26 +347,77 @@ export default function ProjectForm() {
                   onChange={(e) => setVillageFilter(e.target.value)}
                 />
 
-                <select
-                  className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={form.watch("village") ?? ""}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    form.setValue("village", v);
-                    const rec = mapping.find((r) => r.village === v);
-                    form.setValue("mandal", rec ? rec.mandal : "");
-                  }}
-                >
-                  <option value="">Select village</option>
-                  {filteredVillages.map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
+                {!manualMode ? (
+                  <>
+                    <select
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={form.watch("village") ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "__other__") {
+                          setManualMode(true);
+                          form.setValue("village", "");
+                          form.setValue("mandal", "");
+                          setManualVillage("");
+                          setManualMandal("");
+                          return;
+                        }
+                        form.setValue("village", v);
+                        const rec = mapping.find((r) => r.village === v);
+                        form.setValue("mandal", rec ? rec.mandal : "");
+                        setManualMode(false);
+                      }}
+                    >
+                      <option value="">Select village</option>
+                      {filteredVillages.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                      <option value="__other__">Other (type manually)</option>
+                    </select>
 
-                {villageFilter.trim().length >= 2 && filteredVillages.length === 0 && (
-                  <p className="mt-1 text-xs text-amber-700">No villages match your search</p>
+                    {villageFilter.trim().length >= 2 && filteredVillages.length === 0 && (
+                      <p className="mt-1 text-xs text-amber-700">No villages match your search — choose "Other" to type manually</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      placeholder="Enter village manually"
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={manualVillage}
+                      onChange={(e) => {
+                        setManualVillage(e.target.value);
+                        form.setValue("village", e.target.value);
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Enter mandal manually"
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={manualMandal}
+                      onChange={(e) => {
+                        setManualMandal(e.target.value);
+                        form.setValue("mandal", e.target.value);
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="rounded-md border border-emerald-200 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50"
+                        onClick={() => {
+                          // cancel manual mode
+                          setManualMode(false);
+                          setManualVillage("");
+                          setManualMandal("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 )}
               </>
             ) : (
