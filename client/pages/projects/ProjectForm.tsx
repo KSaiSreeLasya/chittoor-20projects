@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase, hasSupabaseEnv } from "@/utils/supabaseClient";
+import villagesCSV from "./villages.csv?raw";
 import type {
   ChittoorProject,
   SiteVisitStatus,
@@ -14,7 +15,7 @@ const schema = z.object({
   project_name: z.string().min(2, "Required"),
   date: z.string().optional().or(z.literal("")),
   capacity_kw: z.enum(["2", "3"]).nullable().optional(),
-  location: z.string().nullable().optional(),
+  // location removed per request
   village: z.string().nullable().optional(),
   mandal: z.string().nullable().optional(),
   power_bill_number: z.string().nullable().optional(),
@@ -46,6 +47,11 @@ export default function ProjectForm() {
   const [mapping, setMapping] = useState<{ mandal: string; village: string }[]>(
     [],
   );
+  const [villageFilter, setVillageFilter] = useState("");
+  const [mandalFilter, setMandalFilter] = useState("");
+  const [manualMode, setManualMode] = useState(false);
+  const [manualVillage, setManualVillage] = useState("");
+  const [manualMandal, setManualMandal] = useState("");
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
@@ -55,7 +61,7 @@ export default function ProjectForm() {
       project_name: "",
       date: "",
       capacity_kw: undefined,
-      location: "",
+      // location removed
       village: "",
       mandal: "",
       power_bill_number: "",
@@ -77,20 +83,56 @@ export default function ProjectForm() {
     void load();
   }, [id]);
 
-  // Load mandal/village mapping from Supabase if available
+  // Load mandal/village mapping from Supabase if available; fall back to local CSV bundle
   useEffect(() => {
-    if (!hasSupabaseEnv) return;
+    const parseCSV = (csv: string) => {
+      const out: { mandal: string; village: string }[] = [];
+      csv.split(/\r?\n/).forEach((line) => {
+        const ln = line.trim();
+        if (!ln) return;
+        if (/^Village\s*,\s*Mandal$/i.test(ln)) return;
+        const idx = ln.lastIndexOf(",");
+        if (idx === -1) return;
+        const village = ln.slice(0, idx).trim();
+        const mandal = ln.slice(idx + 1).trim();
+        if (village && mandal) out.push({ village, mandal });
+      });
+      return out;
+    };
+
+    const local = parseCSV(villagesCSV || "");
+
+    if (!hasSupabaseEnv) {
+      // use local only
+      const uniq = Array.from(
+        new Map(local.map((r) => [r.village.toLowerCase(), r])).values(),
+      );
+      setMapping(uniq);
+      return;
+    }
+
     (async () => {
-      const { data, error } = await supabase
-        .from("mandal_villages")
-        .select("mandal,village");
-      if (!error && Array.isArray(data)) {
-        setMapping(
-          (data as any[]).map((r) => ({
-            mandal: String(r.mandal || "").trim(),
-            village: String(r.village || "").trim(),
-          })),
+      try {
+        const { data, error } = await supabase
+          .from("mandal_villages")
+          .select("mandal,village");
+        const supa =
+          !error && Array.isArray(data)
+            ? (data as any[]).map((r) => ({
+                village: String(r.village || "").trim(),
+                mandal: String(r.mandal || "").trim(),
+              }))
+            : [];
+
+        const map = new Map<string, { mandal: string; village: string }>();
+        for (const r of local) map.set(r.village.toLowerCase(), r);
+        for (const r of supa) map.set(r.village.toLowerCase(), r);
+        setMapping(Array.from(map.values()));
+      } catch (err) {
+        const uniq = Array.from(
+          new Map(local.map((r) => [r.village.toLowerCase(), r])).values(),
         );
+        setMapping(uniq);
       }
     })();
   }, []);
@@ -119,7 +161,7 @@ export default function ProjectForm() {
           p.capacity_kw !== null && p.capacity_kw !== undefined
             ? (String(p.capacity_kw) as "2" | "3")
             : undefined,
-        location: p.location ?? "",
+        // location removed from form reset
         village: (p as any).village ?? "",
         mandal: (p as any).mandal ?? "",
         power_bill_number: p.power_bill_number ?? "",
@@ -191,7 +233,15 @@ export default function ProjectForm() {
           const { error: upErr } = await supabase.storage
             .from("project-images")
             .upload(path, file, { upsert: false });
-          if (upErr) throw upErr;
+          if (upErr) {
+            const msg = String(upErr.message || upErr).toLowerCase();
+            if (msg.includes("bucket") || msg.includes("not found")) {
+              throw new Error(
+                "Supabase storage bucket 'project-images' not found. Create the bucket in Supabase Storage or remove image uploads.",
+              );
+            }
+            throw upErr;
+          }
           const { data: pub } = supabase.storage
             .from("project-images")
             .getPublicUrl(path);
@@ -211,6 +261,33 @@ export default function ProjectForm() {
       setLoading(false);
     }
   };
+
+  // compute unique mandals and villages, apply mandal filter and village text filter
+  const _mandals = Array.from(
+    new Set(mapping.map((r) => r.mandal).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
+  const filteredMandals =
+    mandalFilter.trim().length >= 2
+      ? _mandals.filter((m) =>
+          m.toLowerCase().includes(mandalFilter.trim().toLowerCase()),
+        )
+      : _mandals;
+
+  const selectedMandal = (form.watch("mandal") || "").trim();
+  const villagesSource = selectedMandal
+    ? mapping.filter((r) => r.mandal === selectedMandal).map((r) => r.village)
+    : mapping.map((r) => r.village);
+  const _villages = Array.from(new Set(villagesSource.filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+
+  const filteredVillages = (() => {
+    const q = villageFilter.trim().toLowerCase();
+    if (q.length >= 3)
+      return _villages.filter((v) => v.toLowerCase().includes(q));
+    if (selectedMandal) return _villages; // show mandal's villages when mandal selected
+    return []; // require user to type 3+ letters or select mandal
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
@@ -278,39 +355,132 @@ export default function ProjectForm() {
             </select>
           </div>
 
-          {/* Location */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Villages / Location</label>
-            <input
-              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-              {...form.register("location")}
-            />
-          </div>
-
           {/* Village (auto-fills Mandal) */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Village</label>
             {mapping.length > 0 ? (
-              <select
-                className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-                value={form.watch("village") ?? ""}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  form.setValue("village", v);
-                  const rec = mapping.find((r) => r.village === v);
-                  form.setValue("mandal", rec ? rec.mandal : "");
-                }}
-              >
-                <option value="">Select village</option>
-                {Array.from(new Set(mapping.map((r) => r.village)))
-                  .filter(Boolean)
-                  .sort((a, b) => a.localeCompare(b))
-                  .map((v) => (
-                    <option key={v} value={v}>
-                      {v}
+              <>
+                <label className="text-sm font-medium">Mandal</label>
+                <input
+                  type="text"
+                  placeholder="Type 2+ letters to filter mandals"
+                  className="w-full mb-2 rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={mandalFilter}
+                  onChange={(e) => setMandalFilter(e.target.value)}
+                />
+
+                <select
+                  className="w-full mb-2 rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={form.watch("mandal") ?? ""}
+                  onChange={(e) => {
+                    const m = e.target.value;
+                    if (m === "__other__") {
+                      setManualMode(true);
+                      form.setValue("mandal", "");
+                      setManualMandal("");
+                      return;
+                    }
+                    form.setValue("mandal", m);
+                    // clear any selected village when mandal changes
+                    form.setValue("village", "");
+                    setVillageFilter("");
+                    setManualMode(false);
+                  }}
+                >
+                  <option value="">All Mandals</option>
+                  {filteredMandals.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
                     </option>
                   ))}
-              </select>
+                  <option value="__other__">Other (type mandal)</option>
+                </select>
+
+                {!manualMode ? (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Type 3+ letters to filter villages"
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+                      value={villageFilter}
+                      onChange={(e) => setVillageFilter(e.target.value)}
+                    />
+
+                    <select
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={form.watch("village") ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "__other__") {
+                          setManualMode(true);
+                          form.setValue("village", "");
+                          form.setValue("mandal", "");
+                          setManualVillage("");
+                          setManualMandal("");
+                          return;
+                        }
+                        form.setValue("village", v);
+                        const rec = mapping.find((r) => r.village === v);
+                        form.setValue("mandal", rec ? rec.mandal : "");
+                        setManualMode(false);
+                      }}
+                    >
+                      <option value="">Select village</option>
+                      {filteredVillages.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                      <option value="__other__">Other (type manually)</option>
+                    </select>
+
+                    {villageFilter.trim().length >= 3 &&
+                      filteredVillages.length === 0 && (
+                        <p className="mt-1 text-xs text-amber-700">
+                          No villages match your search — choose "Other" to type
+                          manually
+                        </p>
+                      )}
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      placeholder="Enter village manually"
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={manualVillage}
+                      onChange={(e) => {
+                        setManualVillage(e.target.value);
+                        form.setValue("village", e.target.value);
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Enter mandal manually"
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={manualMandal}
+                      onChange={(e) => {
+                        setManualMandal(e.target.value);
+                        form.setValue("mandal", e.target.value);
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="rounded-md border border-emerald-200 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50"
+                        onClick={() => {
+                          // cancel manual mode
+                          setManualMode(false);
+                          setManualVillage("");
+                          setManualMandal("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <input
                 className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
@@ -330,13 +500,15 @@ export default function ProjectForm() {
             )}
           </div>
 
-          {/* Mandal (auto-filled) */}
-          <div className="space-y-1">
+          {/* Mandal input (hidden when mapping present since a mandal select is shown above) */}
+          <div
+            className="space-y-1"
+            style={{ display: mapping.length > 0 ? "none" : undefined }}
+          >
             <label className="text-sm font-medium">Mandal</label>
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("mandal")}
-              readOnly={mapping.length > 0}
             />
           </div>
 
