@@ -15,7 +15,7 @@ const schema = z.object({
   project_name: z.string().min(2, "Required"),
   date: z.string().optional().or(z.literal("")),
   capacity_kw: z.enum(["2", "3"]).nullable().optional(),
-  location: z.string().nullable().optional(),
+  // location removed per request
   village: z.string().nullable().optional(),
   mandal: z.string().nullable().optional(),
   power_bill_number: z.string().nullable().optional(),
@@ -60,7 +60,7 @@ export default function ProjectForm() {
       project_name: "",
       date: "",
       capacity_kw: undefined,
-      location: "",
+      // location removed
       village: "",
       mandal: "",
       power_bill_number: "",
@@ -159,7 +159,7 @@ export default function ProjectForm() {
           p.capacity_kw !== null && p.capacity_kw !== undefined
             ? (String(p.capacity_kw) as "2" | "3")
             : undefined,
-        location: p.location ?? "",
+        // location removed from form reset
         village: (p as any).village ?? "",
         mandal: (p as any).mandal ?? "",
         power_bill_number: p.power_bill_number ?? "",
@@ -261,11 +261,20 @@ export default function ProjectForm() {
   };
 
   // compute unique villages and apply filter
-  const _villages = Array.from(new Set(mapping.map((r) => r.village).filter(Boolean))).sort((a, b) => a.localeCompare(b));
-  const filteredVillages =
-    villageFilter && villageFilter.trim().length >= 2
-      ? _villages.filter((v) => v.toLowerCase().includes(villageFilter.trim().toLowerCase()))
-      : _villages;
+  // compute unique mandals and villages, apply mandal filter and village text filter
+  const _mandals = Array.from(new Set(mapping.map((r) => r.mandal).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const selectedMandal = (form.watch("mandal") || "").trim();
+  const villagesSource = selectedMandal
+    ? mapping.filter((r) => r.mandal === selectedMandal).map((r) => r.village)
+    : mapping.map((r) => r.village);
+  const _villages = Array.from(new Set(villagesSource.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+  const filteredVillages = (() => {
+    const q = villageFilter.trim().toLowerCase();
+    if (q.length >= 3) return _villages.filter((v) => v.toLowerCase().includes(q));
+    if (selectedMandal) return _villages; // show mandal's villages when mandal selected
+    return []; // require user to type 3+ letters or select mandal
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
@@ -333,30 +342,49 @@ export default function ProjectForm() {
             </select>
           </div>
 
-          {/* Location */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Villages / Location</label>
-            <input
-              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-              {...form.register("location")}
-            />
-          </div>
-
           {/* Village (auto-fills Mandal) */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Village</label>
             {mapping.length > 0 ? (
               <>
-                <input
-                  type="text"
-                  placeholder="Type 2+ letters to filter villages"
-                  className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
-                  value={villageFilter}
-                  onChange={(e) => setVillageFilter(e.target.value)}
-                />
+                <label className="text-sm font-medium">Mandal</label>
+                <select
+                  className="w-full mb-2 rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={form.watch("mandal") ?? ""}
+                  onChange={(e) => {
+                    const m = e.target.value;
+                    if (m === "__other__") {
+                      setManualMode(true);
+                      form.setValue("mandal", "");
+                      setManualMandal("");
+                      return;
+                    }
+                    form.setValue("mandal", m);
+                    // clear any selected village when mandal changes
+                    form.setValue("village", "");
+                    setVillageFilter("");
+                    setManualMode(false);
+                  }}
+                >
+                  <option value="">All Mandals</option>
+                  {_mandals.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                  <option value="__other__">Other (type mandal)</option>
+                </select>
 
                 {!manualMode ? (
                   <>
+                    <input
+                      type="text"
+                      placeholder="Type 3+ letters to filter villages"
+                      className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+                      value={villageFilter}
+                      onChange={(e) => setVillageFilter(e.target.value)}
+                    />
+
                     <select
                       className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
                       value={form.watch("village") ?? ""}
@@ -385,7 +413,7 @@ export default function ProjectForm() {
                       <option value="__other__">Other (type manually)</option>
                     </select>
 
-                    {villageFilter.trim().length >= 2 && filteredVillages.length === 0 && (
+                    {villageFilter.trim().length >= 3 && filteredVillages.length === 0 && (
                       <p className="mt-1 text-xs text-amber-700">No villages match your search — choose "Other" to type manually</p>
                     )}
                   </>
@@ -447,13 +475,12 @@ export default function ProjectForm() {
             )}
           </div>
 
-          {/* Mandal (auto-filled) */}
-          <div className="space-y-1">
+          {/* Mandal input (hidden when mapping present since a mandal select is shown above) */}
+          <div className="space-y-1" style={{ display: mapping.length > 0 ? "none" : undefined }}>
             <label className="text-sm font-medium">Mandal</label>
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("mandal")}
-              readOnly={mapping.length > 0 && !manualMode}
             />
           </div>
 
