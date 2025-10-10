@@ -249,6 +249,13 @@ export default function ProjectForm() {
     }
   };
 
+  // compute unique villages and apply filter
+  const _villages = Array.from(new Set(mapping.map((r) => r.village).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const filteredVillages =
+    villageFilter && villageFilter.trim().length >= 2
+      ? _villages.filter((v) => v.toLowerCase().includes(villageFilter.trim().toLowerCase()))
+      : _villages;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100">
       <div className="container py-8">
@@ -328,26 +335,37 @@ export default function ProjectForm() {
           <div className="space-y-1">
             <label className="text-sm font-medium">Village</label>
             {mapping.length > 0 ? (
-              <select
-                className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-                value={form.watch("village") ?? ""}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  form.setValue("village", v);
-                  const rec = mapping.find((r) => r.village === v);
-                  form.setValue("mandal", rec ? rec.mandal : "");
-                }}
-              >
-                <option value="">Select village</option>
-                {Array.from(new Set(mapping.map((r) => r.village)))
-                  .filter(Boolean)
-                  .sort((a, b) => a.localeCompare(b))
-                  .map((v) => (
+              <>
+                <input
+                  type="text"
+                  placeholder="Type 2+ letters to filter villages"
+                  className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 mb-2"
+                  value={villageFilter}
+                  onChange={(e) => setVillageFilter(e.target.value)}
+                />
+
+                <select
+                  className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={form.watch("village") ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    form.setValue("village", v);
+                    const rec = mapping.find((r) => r.village === v);
+                    form.setValue("mandal", rec ? rec.mandal : "");
+                  }}
+                >
+                  <option value="">Select village</option>
+                  {filteredVillages.map((v) => (
                     <option key={v} value={v}>
                       {v}
                     </option>
                   ))}
-              </select>
+                </select>
+
+                {villageFilter.trim().length >= 2 && filteredVillages.length === 0 && (
+                  <p className="mt-1 text-xs text-amber-700">No villages match your search</p>
+                )}
+              </>
             ) : (
               <input
                 className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
