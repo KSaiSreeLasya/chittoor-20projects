@@ -115,12 +115,13 @@ export default function ProjectForm() {
         const { data, error } = await supabase
           .from("mandal_villages")
           .select("mandal,village");
-        const supa = !error && Array.isArray(data)
-          ? (data as any[]).map((r) => ({
-              village: String(r.village || "").trim(),
-              mandal: String(r.mandal || "").trim(),
-            }))
-          : [];
+        const supa =
+          !error && Array.isArray(data)
+            ? (data as any[]).map((r) => ({
+                village: String(r.village || "").trim(),
+                mandal: String(r.mandal || "").trim(),
+              }))
+            : [];
 
         const map = new Map<string, { mandal: string; village: string }>();
         for (const r of local) map.set(r.village.toLowerCase(), r);
@@ -262,16 +263,21 @@ export default function ProjectForm() {
 
   // compute unique villages and apply filter
   // compute unique mandals and villages, apply mandal filter and village text filter
-  const _mandals = Array.from(new Set(mapping.map((r) => r.mandal).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const _mandals = Array.from(
+    new Set(mapping.map((r) => r.mandal).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
   const selectedMandal = (form.watch("mandal") || "").trim();
   const villagesSource = selectedMandal
     ? mapping.filter((r) => r.mandal === selectedMandal).map((r) => r.village)
     : mapping.map((r) => r.village);
-  const _villages = Array.from(new Set(villagesSource.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const _villages = Array.from(new Set(villagesSource.filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
 
   const filteredVillages = (() => {
     const q = villageFilter.trim().toLowerCase();
-    if (q.length >= 3) return _villages.filter((v) => v.toLowerCase().includes(q));
+    if (q.length >= 3)
+      return _villages.filter((v) => v.toLowerCase().includes(q));
     if (selectedMandal) return _villages; // show mandal's villages when mandal selected
     return []; // require user to type 3+ letters or select mandal
   })();
@@ -413,9 +419,13 @@ export default function ProjectForm() {
                       <option value="__other__">Other (type manually)</option>
                     </select>
 
-                    {villageFilter.trim().length >= 3 && filteredVillages.length === 0 && (
-                      <p className="mt-1 text-xs text-amber-700">No villages match your search — choose "Other" to type manually</p>
-                    )}
+                    {villageFilter.trim().length >= 3 &&
+                      filteredVillages.length === 0 && (
+                        <p className="mt-1 text-xs text-amber-700">
+                          No villages match your search — choose "Other" to type
+                          manually
+                        </p>
+                      )}
                   </>
                 ) : (
                   <div className="space-y-2">
@@ -476,7 +486,10 @@ export default function ProjectForm() {
           </div>
 
           {/* Mandal input (hidden when mapping present since a mandal select is shown above) */}
-          <div className="space-y-1" style={{ display: mapping.length > 0 ? "none" : undefined }}>
+          <div
+            className="space-y-1"
+            style={{ display: mapping.length > 0 ? "none" : undefined }}
+          >
             <label className="text-sm font-medium">Mandal</label>
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
