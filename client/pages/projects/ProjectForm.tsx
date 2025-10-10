@@ -445,7 +445,7 @@ export default function ProjectForm() {
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("mandal")}
-              readOnly={mapping.length > 0}
+              readOnly={mapping.length > 0 && !manualMode}
             />
           </div>
 
