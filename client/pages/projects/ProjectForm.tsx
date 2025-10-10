@@ -32,7 +32,11 @@ const schema = z.object({
   customer_mobile_number: z
     .string()
     .regex(/^[0-9]{10,15}$/, "Enter a valid mobile number"),
-  site_visitor_name: z.string().min(2, "Visitor name is required"),
+  // ✅ Site Visitor Name as Enum Dropdown
+  site_visitor_name: z.enum(
+    ["Balamurgan", "Reddy Roopesh", "Divya", "Sulochana", "G. Madhavi"],
+    { required_error: "Visitor name is required" }
+  ),
   subsidy_scope: z.enum(["Axiso", "Customer"]),
 });
 
