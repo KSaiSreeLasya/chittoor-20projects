@@ -638,7 +638,7 @@ export default function ProjectForm() {
 
           {/* Service Status */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Service Status</label>
+            <label className="text-sm font-medium">Balamuragan Payment </label>
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("service_status")}
