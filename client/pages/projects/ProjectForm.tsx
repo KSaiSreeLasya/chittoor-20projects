@@ -267,8 +267,28 @@ export default function ProjectForm() {
   };
 
   // compute unique mandals and villages, apply mandal filter and village text filter
+  const extraMandals = [
+    "Bai Reddy palli",
+    "V.kota",
+    "Gangavaram",
+    "Thavanampalli",
+    "Irala",
+    "Somala",
+    "Sadum",
+    "Chowdepalli",
+    "Pullicherla",
+    "Rompicherla",
+    "Puthalapattu",
+    "Yadamarri",
+    "vijiyapuram",
+    "G.D.Nellore",
+    "Palasamudram",
+  ];
   const _mandals = Array.from(
-    new Set(mapping.map((r) => r.mandal).filter(Boolean)),
+    new Set([
+      ...mapping.map((r) => r.mandal).filter(Boolean),
+      ...extraMandals,
+    ]),
   ).sort((a, b) => a.localeCompare(b));
   const filteredMandals =
     mandalFilter.trim().length >= 2
@@ -281,6 +301,9 @@ export default function ProjectForm() {
   const villagesSource = selectedMandal
     ? mapping.filter((r) => r.mandal === selectedMandal).map((r) => r.village)
     : mapping.map((r) => r.village);
+  const hasVillagesForSelected = selectedMandal
+    ? mapping.some((r) => r.mandal === selectedMandal)
+    : false;
   const _villages = Array.from(new Set(villagesSource.filter(Boolean))).sort(
     (a, b) => a.localeCompare(b),
   );
@@ -388,7 +411,7 @@ export default function ProjectForm() {
                     // clear any selected village when mandal changes
                     form.setValue("village", "");
                     setVillageFilter("");
-                    setManualMode(false);
+                    setManualMode(!mapping.some((r) => r.mandal === m));
                   }}
                 >
                   <option value="">All Mandals</option>
@@ -400,7 +423,7 @@ export default function ProjectForm() {
                   <option value="__other__">Other (type mandal)</option>
                 </select>
 
-                {!manualMode ? (
+                {!manualMode && hasVillagesForSelected ? (
                   <>
                     <input
                       type="text"
