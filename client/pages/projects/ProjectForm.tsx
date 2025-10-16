@@ -606,7 +606,7 @@ export default function ProjectForm() {
           {/* Payment Request */}
           <div className="space-y-1">
             <label className="text-sm font-medium">
-              Payment Request (Amount ₹)
+              Velugu Officers Payment  (Amount ₹)
             </label>
             <input
               type="number"
