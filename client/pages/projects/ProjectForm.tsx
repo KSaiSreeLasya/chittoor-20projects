@@ -35,7 +35,7 @@ const schema = z.object({
   // ✅ Site Visitor Name as Enum Dropdown
   site_visitor_name: z.enum(
     ["Balamurgan", "Reddy Roopesh", "Divya", "Sulochana", "G. Madhavi"],
-    { required_error: "Visitor name is required" }
+    { required_error: "Visitor name is required" },
   ),
   subsidy_scope: z.enum(["Axiso", "Customer"]),
 });
@@ -267,8 +267,25 @@ export default function ProjectForm() {
   };
 
   // compute unique mandals and villages, apply mandal filter and village text filter
+  const extraMandals = [
+    "Bai Reddy palli",
+    "V.kota",
+    "Gangavaram",
+    "Thavanampalli",
+    "Irala",
+    "Somala",
+    "Sadum",
+    "Chowdepalli",
+    "Pullicherla",
+    "Rompicherla",
+    "Puthalapattu",
+    "Yadamarri",
+    "vijiyapuram",
+    "G.D.Nellore",
+    "Palasamudram",
+  ];
   const _mandals = Array.from(
-    new Set(mapping.map((r) => r.mandal).filter(Boolean)),
+    new Set([...mapping.map((r) => r.mandal).filter(Boolean), ...extraMandals]),
   ).sort((a, b) => a.localeCompare(b));
   const filteredMandals =
     mandalFilter.trim().length >= 2
@@ -281,6 +298,9 @@ export default function ProjectForm() {
   const villagesSource = selectedMandal
     ? mapping.filter((r) => r.mandal === selectedMandal).map((r) => r.village)
     : mapping.map((r) => r.village);
+  const hasVillagesForSelected = selectedMandal
+    ? mapping.some((r) => r.mandal === selectedMandal)
+    : false;
   const _villages = Array.from(new Set(villagesSource.filter(Boolean))).sort(
     (a, b) => a.localeCompare(b),
   );
@@ -388,7 +408,7 @@ export default function ProjectForm() {
                     // clear any selected village when mandal changes
                     form.setValue("village", "");
                     setVillageFilter("");
-                    setManualMode(false);
+                    setManualMode(!mapping.some((r) => r.mandal === m));
                   }}
                 >
                   <option value="">All Mandals</option>
@@ -400,7 +420,7 @@ export default function ProjectForm() {
                   <option value="__other__">Other (type mandal)</option>
                 </select>
 
-                {!manualMode ? (
+                {!manualMode && hasVillagesForSelected ? (
                   <>
                     <input
                       type="text"
@@ -572,24 +592,23 @@ export default function ProjectForm() {
           </div>
 
           {/* Site Visitor Name */}
-         <div className="space-y-1">
-  <label className="text-sm font-medium">Site Visitor Name</label>
-  <select
-    className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-    {...form.register("site_visitor_name")}
-  >
-    <option value="">Select Visitor</option>
-    <option value="Balamurgan">Balamurgan</option>
-    <option value="Reddy Roopesh">Reddy Roopesh</option>
-    <option value="Divya">Divya</option>
-    <option value="Sulochana">Sulochana</option>
-    <option value="G. Madhavi">G. Madhavi</option>
-  </select>
-  <p className="text-xs text-red-600">
-    {form.formState.errors.site_visitor_name?.message}
-  </p>
-</div>
-
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Site Visitor Name</label>
+            <select
+              className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+              {...form.register("site_visitor_name")}
+            >
+              <option value="">Select Visitor</option>
+              <option value="Balamurgan">Balamurgan</option>
+              <option value="Reddy Roopesh">Reddy Roopesh</option>
+              <option value="Divya">Divya</option>
+              <option value="Sulochana">Sulochana</option>
+              <option value="G. Madhavi">G. Madhavi</option>
+            </select>
+            <p className="text-xs text-red-600">
+              {form.formState.errors.site_visitor_name?.message}
+            </p>
+          </div>
 
           {/* Subsidy Scope */}
           <div className="space-y-1">
@@ -606,7 +625,7 @@ export default function ProjectForm() {
           {/* Payment Request */}
           <div className="space-y-1">
             <label className="text-sm font-medium">
-              Payment Request (Amount ₹)
+              Velugu Officers Payment (Amount ₹)
             </label>
             <input
               type="number"
@@ -638,7 +657,7 @@ export default function ProjectForm() {
 
           {/* Service Status */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Service Status</label>
+            <label className="text-sm font-medium">Balamuragan Payment </label>
             <input
               className="w-full rounded-lg border border-emerald-200 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
               {...form.register("service_status")}
